@@ -1,0 +1,104 @@
+﻿@model IEnumerable<AgroClassLib.FarmOwner.ServiceManagement>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Stay Services (Rooms)</h3>
+
+        <button id="btnAddRoom" class="btn btn-success">
+            <i class="fa fa-plus"></i> Add Room
+        </button>
+    </div>
+
+    <table class="table table-bordered table-striped">
+
+        <thead class="thead-dark">
+            <tr>
+                <th>Room Name</th>
+                <th>Guests</th>
+                <th>Price</th>
+                <th style="width:120px;">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.RoomName</td>
+                    <td>@item.NumberOfGuests</td>
+                    <td>@item.PricePerNight</td>
+
+                    <td>
+                        <button class="btn btn-warning btn-sm btnEdit"
+                                data-id="@item.RoomCode">
+                            Edit
+                        </button>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="roomModal" tabindex="-1" role="dialog">
+
+    <div class="modal-dialog modal-lg" role="document">
+
+        <div class="modal-content">
+
+            <div class="modal-body" id="roomModalBody">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts{
+
+    <script>
+
+        $(document).ready(function () {
+
+            // Add Room
+            $("#btnAddRoom").click(function () {
+
+                $.get('/FarmOwner/RoomModal', function (data) {
+
+                    $("#roomModalBody").html(data);
+
+                    $("#roomModal").modal('show');
+
+                });
+
+            });
+
+            // Edit Room
+            $(".btnEdit").click(function () {
+
+                var id = $(this).data("id");
+
+                $.get('/FarmOwner/RoomModal', { id: id }, function (data) {
+
+                    $("#roomModalBody").html(data);
+
+                    $("#roomModal").modal('show');
+
+                });
+
+            });
+
+        });
+
+    </script>
+
+}

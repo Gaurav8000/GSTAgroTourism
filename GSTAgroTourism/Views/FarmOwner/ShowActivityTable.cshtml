@@ -1,0 +1,116 @@
+﻿@model IEnumerable<AgroClassLib.FarmOwner.ServiceManagement>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3">
+
+        <h3>Farm Activities</h3>
+
+        <button id="btnAddActivity" class="btn btn-success">
+            Add Activity
+        </button>
+
+    </div>
+
+    <table class="table table-bordered table-striped">
+
+        <thead class="thead-dark">
+
+            <tr>
+                <th>Activity Name</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+
+                    <td>@item.ActivityName</td>
+                    <td>@item.Duration</td>
+                    <td>@item.Price</td>
+                    <td>@item.StartDate</td>
+                    <td>@item.EndDate</td>
+
+                    <td>
+
+                        <button class="btn btn-warning btnEdit"
+                                data-id="@item.ActivityCode">
+                            Edit
+                        </button>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="activityModal" tabindex="-1" role="dialog">
+
+    <div class="modal-dialog modal-lg" role="document">
+
+        <div class="modal-content">
+
+            <div class="modal-body" id="activityModalBody">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts{
+
+    <script>
+
+        $(document).ready(function () {
+
+            // Add Activity
+            $("#btnAddActivity").click(function () {
+
+                $.get('/FarmOwner/ActivityModal', function (data) {
+
+                    $("#activityModalBody").html(data);
+
+                    $("#activityModal").modal('show');
+
+                });
+
+            });
+
+            // Edit Activity
+            $(".btnEdit").click(function () {
+
+                var id = $(this).data("id");
+
+                $.get('/FarmOwner/ActivityModal', { id: id }, function (data) {
+
+                    $("#activityModalBody").html(data);
+
+                    $("#activityModal").modal('show');
+
+                });
+
+            });
+
+        });
+
+    </script>
+
+}

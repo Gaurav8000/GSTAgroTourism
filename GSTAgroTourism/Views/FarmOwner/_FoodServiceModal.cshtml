@@ -1,0 +1,164 @@
+﻿@model AgroClassLib.FarmOwner.ServiceManagement
+
+@using (Html.BeginForm("SaveorEditFood", "FarmOwner",
+        FormMethod.Post,
+        new { enctype = "multipart/form-data", id = "foodForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.FoodServiceCode)
+    @Html.HiddenFor(m => m.ImageFile)
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4 class="mb-3">
+                    @(string.IsNullOrEmpty(Model?.FoodServiceCode)
+                        ? "Add Food Service"
+                        : "Edit Food Service")
+                </h4>
+            </div>
+        </div>
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <!-- Meal Type -->
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">Meal Type</label>
+            <div class="col-md-9">
+                @Html.DropDownListFor(m => m.MealTypeCode,
+                ViewBag.MealTypeList as SelectList,
+                "-Select Meal Type-",
+                new { @class = "form-control" })
+            </div>
+        </div>
+
+        <!-- Food Style -->
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">Food Style</label>
+            <div class="col-md-9">
+                @Html.DropDownListFor(m => m.FoodStyleCode,
+                ViewBag.FoodTypeList as SelectList,
+                "-Select Food Style-",
+                new { @class = "form-control" })
+            </div>
+        </div>
+
+        <!-- Farmhouse -->
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">Farmhouse</label>
+            <div class="col-md-9">
+                @Html.DropDownListFor(m => m.FarmhouseCode,
+     ViewBag.FarmList as SelectList,
+     "-Select Farm-",
+     new { @class = "form-control" })
+            </div>
+        </div>
+
+        <!-- Start Time -->
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">Start Time</label>
+            <div class="col-md-9">
+                @Html.TextBoxFor(m => m.StartTime,
+                new { @class = "form-control", type = "time" })
+            </div>
+        </div>
+
+        <!-- End Time -->
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">End Time</label>
+            <div class="col-md-9">
+                @Html.TextBoxFor(m => m.EndTime,
+                new { @class = "form-control", type = "time" })
+            </div>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="form-group row">
+            <label class="col-md-3 col-form-label">Upload Image</label>
+            <div class="col-md-9">
+
+                <input type="file" name="ImageUpload" class="form-control" />
+
+                @if (!string.IsNullOrEmpty(Model?.ImageFile))
+                {
+                    <div class="mt-2">
+                        <img src="@Url.Content(Model.ImageFile)"
+                             width="120"
+                             height="120"
+                             class="img-thumbnail" />
+                    </div>
+                }
+
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-group row">
+            <div class="col-md-9 offset-md-3">
+
+                <button type="submit" class="btn btn-success">
+                    @(string.IsNullOrEmpty(Model?.FoodServiceCode)
+                        ? "Save"
+                        : "Update")
+                </button>
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal">
+                    Cancel
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+}
+
+
+@section Scripts{
+
+    <script>
+
+        $(document).ready(function () {
+
+            $("#foodForm").submit(function (e) {
+
+                e.preventDefault();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+
+                    url: '/FarmOwner/SaveorEditFood',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+
+                    success: function (result) {
+
+                        if (result.success) {
+
+                            $("#foodModal").modal('hide');
+
+                            location.reload(); // refresh table
+
+                        }
+                        else {
+
+                            $("#foodModalBody").html(result);
+
+                        }
+
+                    }
+
+                });
+
+            });
+
+        });
+
+    </script>
+
+}
