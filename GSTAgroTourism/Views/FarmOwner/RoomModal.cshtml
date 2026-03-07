@@ -41,7 +41,7 @@
         <div class="form-group">
             <label>Number Of Guests</label>
 
-            @Html.TextBoxFor(m => m.NumberOfGuests,
+            @Html.TextBoxFor(m => m.Capacity,
             new { @class = "form-control", type = "number" })
 
         </div>
@@ -50,7 +50,7 @@
         <div class="form-group">
             <label>Price Per Night</label>
 
-            @Html.TextBoxFor(m => m.PricePerNight,
+            @Html.TextBoxFor(m => m.Price,
             new { @class = "form-control" })
 
         </div>
@@ -65,10 +65,9 @@
             @if (!string.IsNullOrEmpty(Model?.ImageFile))
             {
                 <div class="mt-2">
-                    <img src="@Url.Content(Model.ImageFile)"
-                         width="120"
-                         height="120"
-                         class="img-thumbnail" />
+<img src="@Url.Content("~/Content/img/" + Model.ImageFile)"
+     width="120"
+     class="img-thumbnail" />
                 </div>
             }
 

@@ -1,108 +1,155 @@
 ﻿@model IEnumerable<AgroClassLib.FarmOwner.ServiceManagement>
 @{
     ViewBag.Title = "Food Services (Meals)";
+    Layout = "~/Views/Shared/FarmOwner.cshtml";
 }
 
 <div class="container mt-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between mb-3">
         <h3>Food Services (Meals)</h3>
-
-        <button id="btnAddMeal" class="btn btn-primary">
-            <i class="fa fa-plus"></i> Add Meal
-        </button>
     </div>
 
-    <div class="card">
+    <table class="table table-bordered table-striped">
 
-        <div class="card-body">
+        <thead class="table-dark">
+            <tr>
+                <th>Food Code</th>
+                <th>Meal Type</th>
+                <th>Food Style</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
 
-            <table class="table table-bordered table-hover table-striped">
+        <tbody>
 
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Food Service Code</th>
-                        <th>Meal Type</th>
-                        <th>Food Style</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th style="width:120px;">Action</th>
-                    </tr>
-                </thead>
+            @foreach (var item in Model)
+            {
+                <tr>
 
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>@item.FoodServiceCode</td>
-                            <td>@item.MealName</td>
-                            <td>@item.FoodStyleName</td>
-                            <td>@item.StartTime</td>
-                            <td>@item.EndTime</td>
+                    <td>@item.FoodServiceCode</td>
+                    <td>@item.MealName</td>
+                    <td>@item.FoodStyleName</td>
+                    <td>@item.StartTime</td>
+                    <td>@item.EndTime</td>
 
-                            <td>
-                                <button class="btn btn-warning btn-sm btnEdit"
-                                        data-id="@item.FoodServiceCode">
-                                    Edit
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
+                    <td>
 
-            </table>
+                        <!-- VIEW -->
+                        <button class="btn btn-warning btn-sm"
+                                onclick="viewFood('@item.FoodServiceCode')">
+                            View
+                        </button>
+
+                        <!-- EDIT -->
+                        <button class="btn btn-info btn-sm"
+                                onclick="editFood('@item.FoodServiceCode')">
+                            Edit
+                        </button>
+
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- VIEW MODAL -->
+
+<div class="modal fade" id="viewModal">
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Food Service Details</h5>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body" id="viewModalBody"></div>
 
         </div>
     </div>
+</div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="foodModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
 
-                <div class="modal-body" id="foodModalBody">
-                </div>
+<!-- EDIT MODAL -->
 
+<div class="modal fade" id="editModal">
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Food Service</h5>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
             </div>
+
+            <div class="modal-body" id="editModalBody"></div>
+
         </div>
     </div>
 </div>
 @section Scripts{
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
 
-        $(document).ready(function () {
+function viewFood(id)
+{
+    $.ajax({
 
-            // Add Meal
-            $("#btnAddMeal").click(function () {
+        url: '@Url.Action("FoodServiceView", "FarmOwner")',
 
-                $.get('/FarmOwner/FoodServiceModal', function (data) {
+        type: 'GET',
 
-                    $("#foodModalBody").html(data);
+        data: { id: id },
 
-                    $("#foodModal").modal('show');
+        success: function (data)
+        {
+            $("#viewModalBody").html(data);
 
-                });
+            var modal = new bootstrap.Modal(document.getElementById('viewModal'));
+            modal.show();
+        }
 
-            });
+    });
+}
 
 
-            // Edit Meal
-            $(".btnEdit").click(function () {
+function editFood(id)
+{
+    $.ajax({
 
-                var id = $(this).data("id");
+        url: '@Url.Action("FoodServiceModal", "FarmOwner")',
 
-                $.get('/FarmOwner/FoodServiceModal', { id: id }, function (data) {
+        type: 'GET',
 
-                    $("#foodModalBody").html(data);
+        data: { id: id },
 
-                    $("#foodModal").modal('show');
+        success: function (data)
+        {
+            $("#editModalBody").html(data);
 
-                });
-
-            });
-
-        });
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+    });
+}
 
     </script>
 

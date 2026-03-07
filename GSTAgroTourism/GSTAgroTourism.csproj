@@ -145,11 +145,16 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\CSS\FarmOwner.css" />
     <Content Include="Content\img\BreakFast.png" />
+    <Content Include="Content\img\budget.jpg.png" />
+    <Content Include="Content\img\delux.jpg.png" />
+    <Content Include="Content\img\luxury.jpg.png" />
     <Content Include="Content\img\NonVegDinner.png" />
     <Content Include="Content\img\NonVegLunch.png" />
     <Content Include="Content\img\VegDinner.png" />
     <Content Include="Content\img\VegLunch.png" />
+    <Content Include="Content\js\FarmOwner.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -186,14 +191,14 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\FarmOwner\ShowFoodServicesMealsTable.cshtml" />
     <Content Include="Views\FarmOwner\_FoodServiceModal.cshtml" />
-    <Content Include="Views\FarmOwner\ActivityModal.cshtml" />
-    <Content Include="Views\FarmOwner\ShowActivityTable.cshtml" />
     <Content Include="Views\FarmOwner\RoomModal.cshtml" />
     <Content Include="Views\FarmOwner\ShowRoomTable.cshtml" />
+    <Content Include="Views\Shared\Farmowner.cshtml" />
+    <Content Include="Views\FarmOwner\FoodServiceView.cshtml" />
+    <Content Include="Views\FarmOwner\RoomModalView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Content\js\" />
     <Folder Include="Models\" />
     <Folder Include="Views\Visitor\" />
   </ItemGroup>

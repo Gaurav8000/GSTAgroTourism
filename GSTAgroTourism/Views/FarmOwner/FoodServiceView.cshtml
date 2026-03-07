@@ -1,0 +1,53 @@
+﻿@model AgroClassLib.FarmOwner.ServiceManagement
+
+<div class="container-fluid">
+
+    <div class="row mb-3">
+
+        <div class="col-md-6">
+            <label class="fw-bold">Meal Type</label>
+            <div>@Model.MealName</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="fw-bold">Food Style</label>
+            <div>@Model.FoodStyleName</div>
+        </div>
+
+    </div>
+
+
+    <div class="row mb-3">
+
+        <div class="col-md-6">
+            <label class="fw-bold">Start Time</label>
+            <div>@Model.StartTime</div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="fw-bold">End Time</label>
+            <div>@Model.EndTime</div>
+        </div>
+
+    </div>
+
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <label class="fw-bold">Image</label>
+
+            <div>
+
+                <img src="@Url.Content(Model.ImageFile)"
+                     width="150"
+                     class="img-thumbnail" />
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

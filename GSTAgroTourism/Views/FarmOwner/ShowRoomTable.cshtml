@@ -15,25 +15,32 @@
         <thead class="thead-dark">
             <tr>
                 <th>Room Name</th>
+                <th>Room Type Name</th>
+                <th>Farmhouse Name</th>
                 <th>Guests</th>
                 <th>Price</th>
                 <th style="width:120px;">Action</th>
             </tr>
         </thead>
-
         <tbody>
-
             @foreach (var item in Model)
             {
                 <tr>
                     <td>@item.RoomName</td>
-                    <td>@item.NumberOfGuests</td>
-                    <td>@item.PricePerNight</td>
+                    <td>@item.RoomType</td>
+                    <td>@item.FarmhouseName</td>
+                    <td>@item.Capacity</td>
+                    <td>@item.Price</td>
 
                     <td>
                         <button class="btn btn-warning btn-sm btnEdit"
                                 data-id="@item.RoomCode">
                             Edit
+                        </button>
+
+                        <button class="btn btn-info btn-sm btnView"
+                                data-id="@item.RoomCode">
+                            View
                         </button>
                     </td>
                 </tr>
@@ -46,7 +53,7 @@
 </div>
 
 
-<!-- Modal -->
+<!-- Edit Modal -->
 <div class="modal fade" id="roomModal" tabindex="-1" role="dialog">
 
     <div class="modal-dialog modal-lg" role="document">
@@ -62,11 +69,17 @@
 
 </div>
 
-
+<!--View Modal-->>
+<div class="modal fade" id="viewRoomModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body" id="viewRoomModalBody"></div>
+        </div>
+    </div>
+</div>
 @section Scripts{
 
     <script>
-
         $(document).ready(function () {
 
             // Add Room
@@ -75,22 +88,6 @@
                 $.get('/FarmOwner/RoomModal', function (data) {
 
                     $("#roomModalBody").html(data);
-
-                    $("#roomModal").modal('show');
-
-                });
-
-            });
-
-            // Edit Room
-            $(".btnEdit").click(function () {
-
-                var id = $(this).data("id");
-
-                $.get('/FarmOwner/RoomModal', { id: id }, function (data) {
-
-                    $("#roomModalBody").html(data);
-
                     $("#roomModal").modal('show');
 
                 });
@@ -99,6 +96,58 @@
 
         });
 
+        // Edit Room
+        $(document).ready(function () {
+
+            // Add Room
+            $("#btnAddRoom").click(function () {
+
+                $.get('/FarmOwner/RoomModal', function (data) {
+
+                    $("#roomModalBody").html(data);
+                    $("#roomModal").modal('show');
+
+                });
+
+            });
+
+        });
+
+        // Edit Room
+        $(document).on("click", ".btnEdit", function () {
+
+            var id = $(this).data("id");
+
+            
+
+            $.get('/FarmOwner/RoomModal',
+                { id: id },
+                function (data) {
+                    console.log(data);
+                    $("#roomModalBody").html(data);
+                    $("#roomModal").modal('show');
+
+                });
+
+        });
+
+        // View Room
+        $(document).on("click", ".btnView", function () {
+
+            var id = $(this).data("id");
+
+            console.log("View id:", id);
+
+            $.get('/FarmOwner/ViewRoomModal',
+                { id: id },
+                function (data) {
+
+                    $("#viewRoomModalBody").html(data);
+                    $("#viewRoomModal").modal('show');
+
+                });
+
+        });
     </script>
 
 }

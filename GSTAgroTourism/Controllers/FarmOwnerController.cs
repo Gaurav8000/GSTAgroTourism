@@ -17,7 +17,6 @@ public class FarmOwnerController : Controller
         var list = await objbal.StayServicesRoomsTable();
         return View(list);
     }
-
     // ==============================
     // MODAL (ADD / EDIT)
     // ==============================
@@ -122,15 +121,23 @@ public class FarmOwnerController : Controller
             "FarmhouseName",
             model?.FarmhouseCode
         );
+        var roomTypeList = await objbal.FetchRoomTypeList();
+
+        ViewBag.RoomTypeList = new SelectList(
+            roomTypeList,
+            "RoomTypeCode",
+            "RoomTypeName",
+            model?.RoomTypeCode
+        );
     }
 
     //////////////////////////////Meal End//////////////////////////////
     public async Task<ActionResult> ShowActivityTable()
-{
-    var list = await objbal.FetchActivityTable();
+    {
+        var list = await objbal.FetchActivityTable();
 
-    return View(list);
-}
+        return View(list);
+    }
     public async Task<ActionResult> ActivityModal(string id)
     {
         ServiceManagement model = new ServiceManagement();
@@ -182,7 +189,6 @@ HttpPostedFileBase ImageUpload)
         return View(list);
     }
 
-
     // ==============================
     // ROOM MODAL (ADD / EDIT)
     // ==============================
@@ -198,9 +204,9 @@ HttpPostedFileBase ImageUpload)
                 return HttpNotFound();
         }
 
-        await LoadDropdowns(model);
+        await LoadRoomDropdown(model);
 
-        return PartialView("_RoomModal", model);
+        return PartialView("RoomModal", model);
     }
 
 
@@ -245,6 +251,7 @@ HttpPostedFileBase ImageUpload)
         return Json(new { success = true });
 
     }
+
     private async Task LoadRoomDropdown(ServiceManagement model = null)
     {
         var roomTypeList = await objbal.FetchRoomTypeList();
@@ -256,6 +263,20 @@ HttpPostedFileBase ImageUpload)
             model?.RoomTypeCode
         );
     }
+    public async Task<ActionResult> FoodServiceView(string id)
+    {
+        ServiceManagement model = new ServiceManagement();
 
+        if (!string.IsNullOrEmpty(id))
+        {
+            model = await objbal.FetchFood(id);
+
+            if (model == null)
+                return HttpNotFound();
+        }
+
+        await LoadDropdowns(model);
+
+        return PartialView("FoodServiceView", model);
+    }
 }
-

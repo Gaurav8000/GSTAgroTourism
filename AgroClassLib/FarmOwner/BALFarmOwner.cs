@@ -72,7 +72,9 @@ namespace AgroClassLib.FarmOwner
                     {
                         obj.FoodServiceCode = dr["FoodServiceCode"]?.ToString();
                         obj.MealTypeCode = dr["MealTypeCode"]?.ToString();
+                        obj.MealName = dr["MealName"]?.ToString();
                         obj.FoodStyleCode = dr["FoodStyleCode"]?.ToString();
+                        obj.FoodStyleName = dr["FoodStyleName"]?.ToString();
                         obj.StartTime = dr["StartTime"]?.ToString();
                         obj.EndTime = dr["EndTime"]?.ToString();
                         obj.FarmhouseCode = dr["FarmhouseCode"]?.ToString();
@@ -334,13 +336,15 @@ namespace AgroClassLib.FarmOwner
                     ServiceManagement obj = new ServiceManagement();
 
                     obj.RoomName = row["RoomName"]?.ToString();
-                    obj.RoomType = row["RoomType"]?.ToString();
+                    obj.RoomCode = row["FarmRoomCode"]?.ToString();
+                    obj.RoomType = row["RoomTypeName"]?.ToString();
+                    obj.FarmhouseName = row["FarmHouseName"]?.ToString();
 
-                    if (row["Capacity"] != DBNull.Value)
-                        obj.Capacity = Convert.ToInt32(row["Capacity"]);
+                    if (row["NumberOfGuests"] != DBNull.Value)
+                        obj.Capacity = Convert.ToInt32(row["NumberOfGuests"]);
 
-                    if (row["Price"] != DBNull.Value)
-                        obj.Price = Convert.ToDecimal(row["Price"]);
+                    if (row["PricePerNight"] != DBNull.Value)
+                        obj.Price = Convert.ToDecimal(row["PricePerNight"]);
 
                     obj.ImageFile = row["ImagePath"]?.ToString();
 
@@ -361,22 +365,20 @@ namespace AgroClassLib.FarmOwner
 
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "FetchRoomByCode");
-            dc.Add("@RoomCode", RoomCode);
+            dc.Add("@Flag", "FetchRooms");
+            dc.Add("@FarmRoomCode", RoomCode);
 
             using (SqlDataReader dr = await ExecuteStoreProcedureReturnDR("SPFarmOwner", dc))
             {
                 if (dr != null && await dr.ReadAsync())
                 {
-                    obj.RoomCode = dr["RoomCode"]?.ToString();
-                    obj.RoomType = dr["RoomType"]?.ToString();
-
-                    if (dr["Capacity"] != DBNull.Value)
-                        obj.Capacity = Convert.ToInt32(dr["Capacity"]);
-
-                    if (dr["Price"] != DBNull.Value)
-                        obj.Price = Convert.ToDecimal(dr["Price"]);
-
+                    obj.RoomCode = dr["FarmRoomCode"]?.ToString();
+                    obj.RoomType = dr["RoomTypeName"]?.ToString();
+                    obj.RoomTypeCode = dr["RoomTypeCode"]?.ToString();
+                    obj.RoomName = dr["RoomName"]?.ToString();
+                    obj.RoomTypeName= dr["RoomTypeName"]?.ToString();
+                    obj.Capacity = Convert.ToInt32(dr["NumberOfGuests"]);
+                    obj.Price = Convert.ToDecimal(dr["PricePerNight"]);
                     obj.ImageFile = dr["ImagePath"]?.ToString();
                 }
             }
@@ -411,7 +413,8 @@ namespace AgroClassLib.FarmOwner
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
             dc.Add("@Flag", "UpdateRoom");
-            dc.Add("@RoomCode", obj.RoomCode);
+            dc.Add("@FarmRoomCode", obj.RoomCode);
+            dc.Add("@RoomName", obj.RoomName);
             dc.Add("@RoomType", obj.RoomType);
             dc.Add("@Capacity", obj.Capacity.ToString());
             dc.Add("@Price", obj.Price.ToString());
