@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace AgroClassLib.FarmOwner
 {
@@ -13,6 +14,8 @@ namespace AgroClassLib.FarmOwner
         public int UserId { get; set; }
 
         // ===== Food Service =====
+
+
         public string FoodServiceCode { get; set; }
         public string MealTypeCode { get; set; }
         public string MealName { get; set; }
@@ -20,6 +23,7 @@ namespace AgroClassLib.FarmOwner
         public string FoodStyleName { get; set; }
 
         // ===== Farm =====
+        [Required(ErrorMessage = "Please select Farmhouse")]
         public string FarmhouseCode { get; set; }
         public string FarmhouseName { get; set; }
         public string FarmownerCode { get; set; }
@@ -36,9 +40,8 @@ namespace AgroClassLib.FarmOwner
         // ===== Common =====
         public string ImageFile { get; set; }
         public bool IsActive { get; set; }
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
-
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
         /////////
         ///public string RoomCode { get; set; }
 
@@ -46,10 +49,14 @@ namespace AgroClassLib.FarmOwner
         public string RoomCode { get; set; }
 
         public int Capacity { get; set; }
+
+        [Required(ErrorMessage = "Please select Room Type")]
         public string RoomTypeCode { get; set; }
 
         public string RoomTypeName { get; set; }
 
+
+        [Required(ErrorMessage = "Please enter Room Name")]
         public string RoomName { get; set; }
 
         public int NumberOfGuests { get; set; }
@@ -57,6 +64,22 @@ namespace AgroClassLib.FarmOwner
         public decimal PricePerNight { get; set; }
 
 
+
+    }
+    #endregion
+
+    #region LoginRS
+
+    public class LoginRS
+    {
+        [Required(ErrorMessage = "Please Enter Email")]
+        public string UserEmail { get; set; }
+
+        [Required(ErrorMessage = "Please Enter Password")]
+        public string UserPassword { get; set; }
+
+        [Required(ErrorMessage = "Please Enter new Password")]
+        public string newPassword { get; set; }
 
     }
     #endregion

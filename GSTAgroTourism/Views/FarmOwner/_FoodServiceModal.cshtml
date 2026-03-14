@@ -8,22 +8,12 @@
     @Html.HiddenFor(m => m.FoodServiceCode)
     @Html.HiddenFor(m => m.ImageFile)
 
-    <div class="container-fluid">
-
-        <div class="row">
-            <div class="col-md-12">
-                <h4 class="mb-3">
-                    @(string.IsNullOrEmpty(Model?.FoodServiceCode)
-                        ? "Add Food Service"
-                        : "Edit Food Service")
-                </h4>
-            </div>
-        </div>
+    <div class="container-fluid ">
 
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
         <!-- Meal Type -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <label class="col-md-3 col-form-label">Meal Type</label>
             <div class="col-md-9">
                 @Html.DropDownListFor(m => m.MealTypeCode,
@@ -34,7 +24,7 @@
         </div>
 
         <!-- Food Style -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <label class="col-md-3 col-form-label">Food Style</label>
             <div class="col-md-9">
                 @Html.DropDownListFor(m => m.FoodStyleCode,
@@ -45,7 +35,7 @@
         </div>
 
         <!-- Farmhouse -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <label class="col-md-3 col-form-label">Farmhouse</label>
             <div class="col-md-9">
                 @Html.DropDownListFor(m => m.FarmhouseCode,
@@ -56,7 +46,7 @@
         </div>
 
         <!-- Start Time -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <label class="col-md-3 col-form-label">Start Time</label>
             <div class="col-md-9">
                 @Html.TextBoxFor(m => m.StartTime,
@@ -65,7 +55,7 @@
         </div>
 
         <!-- End Time -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <label class="col-md-3 col-form-label">End Time</label>
             <div class="col-md-9">
                 @Html.TextBoxFor(m => m.EndTime,
@@ -74,7 +64,7 @@
         </div>
 
         <!-- Image Upload -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <label class="col-md-3 col-form-label">Upload Image</label>
             <div class="col-md-9">
 
@@ -94,19 +84,14 @@
         </div>
 
         <!-- Buttons -->
-        <div class="form-group row">
+        <div class="form-group row mb-3">
             <div class="col-md-9 offset-md-3">
-
-                <button type="submit" class="btn btn-success">
-                    @(string.IsNullOrEmpty(Model?.FoodServiceCode)
-                        ? "Save"
-                        : "Update")
+                <button type="submit" class="btn btn-outline-primary btn-rounded">
+                    @(string.IsNullOrEmpty(Model?.FoodServiceCode) ? "Save" : "Update")
+                    <i class="fa fa-pencil"></i>
                 </button>
-
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-dismiss="modal">
-                    Cancel
+                <button type="button" class="btn btn-outline-danger btn-rounded">
+                    <i class="fa fa-times"></i> Cancel
                 </button>
 
             </div>
@@ -115,50 +100,54 @@
     </div>
 }
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-@section Scripts{
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        $(document).ready(function () {
+<script>
 
-            $("#foodForm").submit(function (e) {
+    $(document).on("submit", "#foodForm", function (e) {
 
-                e.preventDefault();
+        e.preventDefault();
 
-                var formData = new FormData(this);
+        var form = $(this);
+        var formData = new FormData(this);
 
-                $.ajax({
+        $.ajax({
 
-                    url: '/FarmOwner/SaveorEditFood',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
+            url: form.attr("action"),
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
 
-                    success: function (result) {
+            success: function (result) {
 
-                        if (result.success) {
+                if (result.success) {
 
-                            $("#foodModal").modal('hide');
+                    $("#editModal").modal("hide");
 
-                            location.reload(); // refresh table
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success!",
+                        text: "Record Saved Successfully"
+                    }).then(function () {
+                        location.reload();
+                    });
 
-                        }
-                        else {
+                } else {
 
-                            $("#foodModalBody").html(result);
+                    Swal.fire("Error", result.message, "error");
 
-                        }
+                }
 
-                    }
-
-                });
-
-            });
+            }
 
         });
 
-    </script>
+    });
 
-}
+
+</script>

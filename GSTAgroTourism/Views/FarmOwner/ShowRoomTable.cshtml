@@ -1,49 +1,225 @@
 ﻿@model IEnumerable<AgroClassLib.FarmOwner.ServiceManagement>
 
+@{
+    ViewBag.Title = "Stay Services (Rooms)";
+    Layout = "~/Views/Shared/FarmOwner.cshtml";
+}
+
+<style>
+    /* ===== DataTable UI Styling ===== */
+
+    #dataTable {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        #dataTable thead th {
+            background: linear-gradient(90deg,#1f3b63,#2f5d9a);
+            color: white;
+            font-size: 15px;
+        }
+
+        #dataTable tbody tr:hover {
+            background: #f4f7fb;
+            transition: 0.2s;
+        }
+
+        #dataTable tbody td {
+            font-size: 14px;
+            padding: 10px !important;
+        }
+
+    /* Table Borders */
+    .dataTable th,
+    .dataTable td {
+        border: 1px solid #ddd !important;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Buttons styling */
+    .dt-button {
+        background: #1f3b63 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 4px !important;
+        padding: 8px 15px !important;
+        margin-right: 5px !important;
+        font-size: 14px !important;
+    }
+
+        .dt-button:hover {
+            background: #0f2f57 !important;
+        }
+
+    /* Search & dropdown */
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px 10px;
+    }
+</style>
+
+<!-- FILTER SECTION -->
+<div class="card mb-3">
+    <div class="card-body">
+
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label>Search</label>
+                <input type="text" id="tableSearch" class="form-control" placeholder="Search...">
+            </div>
+
+            <div class="col-md-3">
+                <label>Room Type</label>
+
+                @Html.DropDownList(
+      "RoomTypeCode",
+      ViewBag.RoomTypeList as SelectList,
+      "All",
+      new { @class = "form-select", id = "roomTypeFilter" }
+  )
+
+            </div>
+            <div class="col-md-3">
+                <label>FarmHouse Name</label>
+                @Html.DropDownList(
+"RoomTypeCode",
+ViewBag.FarmList as SelectList,
+"All",
+new { @class = "form-select", id = "FarmhouseFilter" }
+)
+            </div>
+
+            <div class="col-md-3">
+                <label>&nbsp;</label>
+                <button id="refreshBtn" class="btn btn-outline-primary w-100">
+                    <i class="fa fa-rotate-right"></i> Reset
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- TABS -->
+<ul class="nav nav-tabs justify-content-center">
+
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveTab == "Room" ? "active" : "")"
+           href="@Url.Action("ShowRoomTable","FarmOwner")">
+            Rooms
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveTab == "Food" ? "active" : "")"
+           href="@Url.Action("ShowFoodServicesMealsTable","FarmOwner")">
+            Food Services
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveTab == "Activity" ? "active" : "")"
+           href="@Url.Action("ShowActivityTable","FarmOwner")">
+            Activities
+        </a>
+    </li>
+
+</ul>
+
+<!-- Export Buttons -->
+<div>
+    <button id="excelBtn" class="btn btn-outline-success btn-rounded">
+        <i class="fa fa-file-excel"></i>
+    </button>
+
+    <button id="pdfBtn" class="btn btn-outline-danger btn-rounded">
+        <i class="fa fa-file-pdf"></i>
+    </button>
+
+    <button id="printBtn" class="btn btn-outline-primary btn-rounded">
+        <i class="fa fa-print"></i>
+    </button>
+</div>
+
 <div class="container mt-4">
 
+    <!-- HEADER -->
     <div class="d-flex justify-content-between mb-3">
         <h3>Stay Services (Rooms)</h3>
 
-        <button id="btnAddRoom" class="btn btn-success">
+        <button class="btn btn-success" onclick="openRoomModal()" style="display:none;">
             <i class="fa fa-plus"></i> Add Room
         </button>
     </div>
+    <!-- FILTER SECTION -->
 
-    <table class="table table-bordered table-striped">
+    <!-- TABLE -->
+    <table id="dataTable" class="table table-bordered table-hover text-center align-middle">
 
-        <thead class="thead-dark">
+        <thead>
+
             <tr>
+                <th class="text-center" style="width:0px">
+                    <input type="checkbox" id="selectAll" />
+                </th>
+
+                <th>Sr.No</th>
                 <th>Room Name</th>
-                <th>Room Type Name</th>
-                <th>Farmhouse Name</th>
+                <th>Room Type</th>
                 <th>Guests</th>
+                <th>Farmhouse Name</th>
                 <th>Price</th>
-                <th style="width:120px;">Action</th>
+                <th>Action</th>
             </tr>
+
         </thead>
+
         <tbody>
+
+            @{
+                int sr = 1;
+            }
+
             @foreach (var item in Model)
             {
+
                 <tr>
+                    <td>
+                        <input type="checkbox" class="rowCheckbox" />
+                    </td>
+
+                    <td>@sr</td>
+
                     <td>@item.RoomName</td>
+
                     <td>@item.RoomType</td>
-                    <td>@item.FarmhouseName</td>
+
                     <td>@item.Capacity</td>
-                    <td>@item.Price</td>
+
+                    <td>@item.FarmhouseName</td>
+
+                    <td>₹ @item.Price</td>
 
                     <td>
-                        <button class="btn btn-warning btn-sm btnEdit"
-                                data-id="@item.RoomCode">
-                            Edit
+
+                        <button type="button" class="btn btn-outline-warning btn-rounded" onclick="openRoomView('@item.RoomCode')">
+                            <i class="fa fa-eye"></i> View
                         </button>
 
-                        <button class="btn btn-info btn-sm btnView"
-                                data-id="@item.RoomCode">
-                            View
+
+                        <button type="button" class="btn btn-outline-primary btn-rounded" onclick="openRoomModal('@item.RoomCode')">
+                            <i class="fa fa-pencil"></i> Edit
                         </button>
+
                     </td>
+
                 </tr>
+
+                sr++;
+
             }
 
         </tbody>
@@ -53,101 +229,177 @@
 </div>
 
 
-<!-- Edit Modal -->
-<div class="modal fade" id="roomModal" tabindex="-1" role="dialog">
+<!-- ROOM ADD / EDIT MODAL -->
 
-    <div class="modal-dialog modal-lg" role="document">
+<div class="modal fade" id="roomModal">
 
-        <div class="modal-content">
-
-            <div class="modal-body" id="roomModalBody">
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<!--View Modal-->>
-<div class="modal fade" id="viewRoomModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
+
         <div class="modal-content">
-            <div class="modal-body" id="viewRoomModalBody"></div>
+
+
+
+            <div class="modal-body" id="roomModalBody"></div>
+
         </div>
+
     </div>
+
 </div>
+
+
+<!-- ROOM VIEW MODAL -->
+
+<div class="modal fade" id="roomViewModal">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div id="roomViewBody"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 @section Scripts{
 
     <script>
+
+        var table;
+
         $(document).ready(function () {
 
-            // Add Room
-            $("#btnAddRoom").click(function () {
+            // DataTable Initialize
+            table = $('#dataTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                dom: 'lfrtip',
+                ordering: false
+            });
 
-                $.get('/FarmOwner/RoomModal', function (data) {
 
-                    $("#roomModalBody").html(data);
-                    $("#roomModal").modal('show');
+            /* SEARCH FILTER */
+            $('#tableSearch').keyup(function () {
 
-                });
+                table.search($(this).val()).draw();
+
+            });
+
+            /* ROOM TYPE FILTER */
+            $('#roomTypeFilter').change(function () {
+
+                var selected = $(this).find("option:selected").text();
+
+                if (selected === "All") {
+                    table.column(3).search('').draw();
+                }
+                else {
+                    table.column(3).search('^' + selected + '$', true, false).draw();
+                }
+
+            });
+
+            /* FARMHOUSE FILTER */
+            $('#FarmhouseFilter').change(function () {
+
+                var selected = $(this).find("option:selected").text();
+
+                if (selected === "All") {
+                    table.column(5).search('').draw();
+                }
+                else {
+                    table.column(5).search('^' + selected + '$', true, false).draw();
+                }
+
+            });
+
+            /* RESET FILTER */
+            $('#refreshBtn').click(function () {
+
+                $('#tableSearch').val('');
+                $('#farmTypeFilter').val('');
+                $('#statusFilter').val('');
+
+                table.search('').columns().search('').draw();
+
+            });
+
+
+            /* EXPORT BUTTONS */
+
+            $('#excelBtn').click(function () {
+
+                table.button('.buttons-excel').trigger();
+
+            });
+
+            $('#pdfBtn').click(function () {
+
+                table.button('.buttons-pdf').trigger();
+
+            });
+
+            $('#printBtn').click(function () {
+
+                table.button('.buttons-print').trigger();
+
+            });
+
+
+            /* SELECT ALL */
+
+            $('#selectAll').click(function () {
+
+                $('.rowCheckbox').prop('checked', this.checked);
+
+            });
+
+
+            $(document).on("change", ".rowCheckbox", function () {
+
+                let total = $(".rowCheckbox").length;
+                let checked = $(".rowCheckbox:checked").length;
+
+                $("#selectAll").prop("checked", total === checked);
 
             });
 
         });
 
-        // Edit Room
-        $(document).ready(function () {
 
-            // Add Room
-            $("#btnAddRoom").click(function () {
+        /* MODAL OPEN */
 
-                $.get('/FarmOwner/RoomModal', function (data) {
+        function openRoomModal(id = "") {
 
-                    $("#roomModalBody").html(data);
-                    $("#roomModal").modal('show');
+            $.get("/FarmOwner/RoomModal", { id: id }, function (data) {
 
-                });
+                $("#roomModalBody").html(data);
+
+                var modal = new bootstrap.Modal(document.getElementById('roomModal'));
+                modal.show();
 
             });
 
-        });
+        }
 
-        // Edit Room
-        $(document).on("click", ".btnEdit", function () {
 
-            var id = $(this).data("id");
+        function openRoomView(id) {
 
-            
+            $.get("/FarmOwner/RoomModalView", { id: id }, function (data) {
 
-            $.get('/FarmOwner/RoomModal',
-                { id: id },
-                function (data) {
-                    console.log(data);
-                    $("#roomModalBody").html(data);
-                    $("#roomModal").modal('show');
+                $("#roomViewBody").html(data);
 
-                });
+                var modal = new bootstrap.Modal(document.getElementById('roomViewModal'));
+                modal.show();
 
-        });
+            });
 
-        // View Room
-        $(document).on("click", ".btnView", function () {
+        }
 
-            var id = $(this).data("id");
-
-            console.log("View id:", id);
-
-            $.get('/FarmOwner/ViewRoomModal',
-                { id: id },
-                function (data) {
-
-                    $("#viewRoomModalBody").html(data);
-                    $("#viewRoomModal").modal('show');
-
-                });
-
-        });
     </script>
 
 }

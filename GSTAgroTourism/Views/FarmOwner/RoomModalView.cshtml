@@ -1,46 +1,88 @@
 ﻿@model AgroClassLib.FarmOwner.ServiceManagement
 
-<div class="container">
+<div class="modal-header">
 
-    <h4>View Room</h4>
+    <h4 class="modal-title">Room Details</h4>
 
-    <hr />
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="modal">
+    </button>
 
-    <div class="form-group">
-        <label>Room Name</label>
-        @Html.TextBoxFor(m => m.RoomName,
-        new { @class = "form-control", @readonly = "readonly" })
+</div>
+
+
+<div class="modal-body">
+
+    <div class="container-fluid">
+
+        <div class="row mb-3">
+
+            <div class="col-md-6">
+                <label class="fw-bold">Room Name</label>
+                <div>@Model.RoomName</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="fw-bold">Room Type</label>
+                <div>@Model.RoomTypeName</div>
+            </div>
+
+        </div>
+
+
+        <div class="row mb-3">
+
+            <div class="col-md-6">
+                <label class="fw-bold">Farmhouse Name</label>
+                <div>@Model.FarmhouseName</div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="fw-bold">Number Of Guests</label>
+                <div>@Model.Capacity</div>
+            </div>
+
+        </div>
+
+
+        <div class="row mb-3">
+
+            <div class="col-md-6">
+                <label class="fw-bold">Price Per Night</label>
+                <div>₹ @Model.Price</div>
+            </div>
+
+        </div>
+
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <label class="fw-bold">Image</label>
+
+                <div class="mt-2">
+
+                    <img src="@Url.Content("~/Content/img/" + Model.ImageFile)"
+                         width="150"
+                         class="img-thumbnail" />
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="form-group">
-        <label>Room Type</label>
-        @Html.TextBoxFor(m => m.RoomType,
-        new { @class = "form-control", @readonly = "readonly" })
-    </div>
+</div>
 
-    <div class="form-group">
-        <label>Guests</label>
-        @Html.TextBoxFor(m => m.NumberOfGuests,
-        new { @class = "form-control", @readonly = "readonly" })
-    </div>
 
-    <div class="form-group">
-        <label>Price</label>
-        @Html.TextBoxFor(m => m.PricePerNight,
-        new { @class = "form-control", @readonly = "readonly" })
-    </div>
-
-    @if (!string.IsNullOrEmpty(Model?.ImageFile))
-    {
-        <img src="@Url.Content(Model.ImageFile)"
-             width="120"
-             class="img-thumbnail" />
-    }
-
-    <br /><br />
+<div class="modal-footer">
 
     <button class="btn btn-secondary"
-            data-dismiss="modal">
+            data-bs-dismiss="modal">
         Close
     </button>
 

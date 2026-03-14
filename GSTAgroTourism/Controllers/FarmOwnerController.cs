@@ -1,20 +1,68 @@
 ﻿using AgroClassLib.FarmOwner;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.IO;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-
 public class FarmOwnerController : Controller
 {
     BALFarmOwner objbal = new BALFarmOwner();
+    public ActionResult Index()
+    {
+        return View();
+    }
 
+
+    [HttpGet]
+    public ActionResult Login()
+    {
+        return View();
+    }
+    [HttpPost] //login 
+
+    public async Task<ActionResult> Login(LoginRS model)
+    {
+
+        DataSet ds = await objbal.Login(model);
+
+        if (ds.Tables[0].Rows.Count > 0)
+        {
+            // OWNER
+            Session["UserId"] = ds.Tables[0].Rows[0]["UserId"];
+            Session["Email"] = ds.Tables[0].Rows[0]["Email"];
+            Session["OwnerCode"] = ds.Tables[0].Rows[0]["FarmOwnerCode"];
+            Session["OwnerName"] = ds.Tables[0].Rows[0]["FullName"].ToString();
+
+            return RedirectToAction("ShowFoodServicesMealsTable", "FarmOwner");
+        }
+        else if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
+        {
+            // VISITOR
+            Session["UserId"] = ds.Tables[1].Rows[0]["UserId"];
+            Session["Email"] = ds.Tables[1].Rows[0]["Email"];
+            Session["VisitorCode"] = ds.Tables[1].Rows[0]["VisitorCode"];
+
+            return RedirectToAction("Dashboard", "Visitor");
+        }
+        else
+        {
+            ViewBag.Message = "Invalid Email or Password";
+            return View("Index");
+        }
+    }
     // ==============================
     // SHOW TABLE
-    // ==============================
+    // =====
+
+    // =========================
     public async Task<ActionResult> ShowFoodServicesMealsTable()
     {
-        var list = await objbal.StayServicesRoomsTable();
+      string  FarmOwnerCode = Session["OwnerCode"].ToString();
+        await LoadDropdowns();
+        ViewBag.ActiveTab = "Food";
+        var list = await objbal.FoodServiceTable(FarmOwnerCode);
         return View(list);
     }
     // ==============================
@@ -41,49 +89,51 @@ public class FarmOwnerController : Controller
     // SAVE OR UPDATE
     // ==============================
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<ActionResult> SaveorEditFood(ServiceManagement model, HttpPostedFileBase ImageUpload)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            await LoadDropdowns(model);
-            return PartialView("_FoodServiceModal", model);
-        }
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Model state invalid" });
+            }
 
-        // ==============================
-        // IMAGE UPLOAD
-        // ==============================
-        if (ImageUpload != null && ImageUpload.ContentLength > 0)
+            if (ImageUpload != null && ImageUpload.ContentLength > 0)
+            {
+                string fileName = Path.GetFileName(ImageUpload.FileName);
+
+                string path = Server.MapPath("~/Content/img/");
+
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+
+                string fullPath = Path.Combine(path, fileName);
+
+                ImageUpload.SaveAs(fullPath);
+
+                model.ImageFile = "~/Content/img/" + fileName;
+            }
+
+            if (string.IsNullOrEmpty(model.FoodServiceCode))
+            {
+                await objbal.SaveFoodServiceTable(model);
+            }
+            else
+            {
+                await objbal.UpdateFoodServiceTable(model);
+            }
+
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
         {
-            string fileName = Guid.NewGuid().ToString() +
-                              System.IO.Path.GetExtension(ImageUpload.FileName);
-
-            string path = Server.MapPath("~/Content/img/");
-
-            if (!System.IO.Directory.Exists(path))
-                System.IO.Directory.CreateDirectory(path);
-
-            string fullPath = System.IO.Path.Combine(path, fileName);
-
-            ImageUpload.SaveAs(fullPath);
-
-            model.ImageFile = "~/Content/img/" + fileName;
+            return Json(new
+            {
+                success = false,
+                message = ex.Message,
+                stack = ex.StackTrace
+            });
         }
-
-        // ==============================
-        // INSERT OR UPDATE
-        // ==============================
-        if (string.IsNullOrEmpty(model.FoodServiceCode))
-        {
-            await objbal.SaveFoodServiceTable(model);
-        }
-        else
-        {
-            await objbal.UpdateFoodServiceTable(model);
-        }
-
-        // AJAX SUCCESS RESPONSE
-        return Json(new { success = true });
     }
 
     // ==============================
@@ -91,13 +141,13 @@ public class FarmOwnerController : Controller
     // ==============================
     private async Task LoadDropdowns(ServiceManagement model = null)
     {
-        string farmOwnerCode = "FW001"; // from session normally
+      string  FarmOwnerCode = Session["OwnerCode"].ToString();
 
         var mealList = await objbal.FetchFoodTypeList();
         var foodList = await objbal.FetchFoodStyleList();
 
         ServiceManagement ser = new ServiceManagement();
-        ser.FarmownerCode = farmOwnerCode;
+        ser.FarmownerCode = FarmOwnerCode;
 
         var farmList = await objbal.FetchUserFarms(ser);
 
@@ -132,60 +182,17 @@ public class FarmOwnerController : Controller
     }
 
     //////////////////////////////Meal End//////////////////////////////
-    public async Task<ActionResult> ShowActivityTable()
-    {
-        var list = await objbal.FetchActivityTable();
-
-        return View(list);
-    }
-    public async Task<ActionResult> ActivityModal(string id)
-    {
-        ServiceManagement model = new ServiceManagement();
-
-        if (!string.IsNullOrEmpty(id))
-        {
-            model = await objbal.FetchActivity(id);
-        }
-
-        await LoadDropdowns(model);
-
-        return PartialView("ActivityModal", model);
-    }
-    [HttpPost]
-    public async Task<ActionResult> SaveActivity(ServiceManagement model,
-HttpPostedFileBase ImageUpload)
-    {
-        if (ImageUpload != null)
-        {
-            string fileName = Guid.NewGuid().ToString()
-            + System.IO.Path.GetExtension(ImageUpload.FileName);
-
-            string path = Server.MapPath("~/Content/img/");
-
-            ImageUpload.SaveAs(System.IO.Path.Combine(path, fileName));
-
-            model.ImageFile = "~/Content/img/" + fileName;
-        }
-
-        if (string.IsNullOrEmpty(model.ActivityCode))
-        {
-            await objbal.SaveActivity(model);
-        }
-        else
-        {
-            await objbal.UpdateActivity(model);
-        }
-
-        return Json(new { success = true });
-    }
-
+   
 
     // ==============================
     // SHOW ROOM TABLE
     // ==============================
     public async Task<ActionResult> ShowRoomTable()
     {
-        var list = await objbal.FetchRoomTable();
+        string FarmOwnerCode = Session["OwnerCode"].ToString();
+        ViewBag.ActiveTab = "Room";
+        await LoadDropdowns();
+        var list = await objbal.FetchRoomTable(FarmOwnerCode);
         return View(list);
     }
 
@@ -215,41 +222,43 @@ HttpPostedFileBase ImageUpload)
     // ==============================
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<ActionResult> SaveRoom(ServiceManagement model,
-    HttpPostedFileBase ImageUpload)
+    //Add and Edit Room Controller
+    public async Task<ActionResult> SaveRoom(ServiceManagement model, HttpPostedFileBase ImageUpload)
     {
-
-        if (ImageUpload != null && ImageUpload.ContentLength > 0)
+        try
         {
+            if (ImageUpload != null && ImageUpload.ContentLength > 0)
+            {
+                string fileName = Guid.NewGuid().ToString() +
+                                  System.IO.Path.GetExtension(ImageUpload.FileName);
 
-            string fileName = Guid.NewGuid().ToString()
-            + System.IO.Path.GetExtension(ImageUpload.FileName);
+                string path = Server.MapPath("~/Content/img/");
 
-            string path = Server.MapPath("~/Content/img/");
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
 
-            if (!System.IO.Directory.Exists(path))
-                System.IO.Directory.CreateDirectory(path);
+                string fullPath = Path.Combine(path, fileName);
 
-            string fullPath = System.IO.Path.Combine(path, fileName);
+                ImageUpload.SaveAs(fullPath);
 
-            ImageUpload.SaveAs(fullPath);
+                model.ImageFile = "~/Content/img/" + fileName;
+            }
 
-            model.ImageFile = "~/Content/img/" + fileName;
+            if (string.IsNullOrEmpty(model.RoomCode))
+            {
+                await objbal.SaveRoom(model);
+            }
+            else
+            {
+                await objbal.UpdateRoom(model);
+            }
 
+            return Json(new { success = true });
         }
-
-
-        if (string.IsNullOrEmpty(model.RoomCode))
+        catch (Exception ex)
         {
-            await objbal.SaveRoom(model);
+            return Json(new { success = false, message = ex.Message });
         }
-        else
-        {
-            await objbal.UpdateRoom(model);
-        }
-
-        return Json(new { success = true });
-
     }
 
     private async Task LoadRoomDropdown(ServiceManagement model = null)
@@ -278,5 +287,21 @@ HttpPostedFileBase ImageUpload)
         await LoadDropdowns(model);
 
         return PartialView("FoodServiceView", model);
+    }
+    public async Task<ActionResult> RoomModalView(string id)
+    {
+        ServiceManagement model = new ServiceManagement();
+
+        if (!string.IsNullOrEmpty(id))
+        {
+            model = await objbal.FetchRoom(id);
+
+            if (model == null)
+                return HttpNotFound();
+        }
+
+        await LoadDropdowns(model);
+
+        return PartialView("RoomModalView", model);
     }
 }

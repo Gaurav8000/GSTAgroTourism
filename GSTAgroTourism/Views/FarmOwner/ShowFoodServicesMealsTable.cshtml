@@ -3,55 +3,211 @@
     ViewBag.Title = "Food Services (Meals)";
     Layout = "~/Views/Shared/FarmOwner.cshtml";
 }
+<style>
+    /* ===== DataTable UI Styling ===== */
+
+    #dataTable {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+        #dataTable thead th {
+            background: linear-gradient(90deg,#1f3b63,#2f5d9a);
+            color: white;
+            font-size: 15px;
+        }
+
+        #dataTable tbody tr:hover {
+            background: #f4f7fb;
+            transition: 0.2s;
+        }
+
+        #dataTable tbody td {
+            font-size: 14px;
+            padding: 10px !important;
+        }
+
+    /* Table Borders */
+    .dataTable th,
+    .dataTable td {
+        border: 1px solid #ddd !important;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Buttons styling */
+    .dt-button {
+        background: #1f3b63 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 4px !important;
+        padding: 8px 15px !important;
+        margin-right: 5px !important;
+        font-size: 14px !important;
+    }
+
+        .dt-button:hover {
+            background: #0f2f57 !important;
+        }
+
+    /* Search & dropdown */
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px 10px;
+    }
+</style>
+
+<!-- FILTER SECTION -->
+<div class="card mb-3">
+    <div class="card-body">
+
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label>Search</label>
+                <input type="text" id="tableSearch" class="form-control" placeholder="Search...">
+            </div>
+
+            <div class="col-md-3">
+                <label>Meal Type</label>
+
+                @Html.DropDownList(
+      "MealTypeCode",
+      ViewBag.MealTypeList as SelectList,
+      "All",
+      new { @class = "form-select", id = "MealTypeFilter" }
+  )
+
+            </div>
+            <div class="col-md-3">
+                <label>Food Style</label>
+                @Html.DropDownList(
+"MealTypeCode",
+ViewBag.FoodTypeList as SelectList,
+"All",
+new { @class = "form-select", id = "FoodTypeList" }
+)
+            </div>
+
+
+            <div class="col-md-3">
+                <label>&nbsp;</label>
+                <button id="refreshBtn" class="btn btn-outline-primary w-100">
+                    <i class="fa fa-rotate-right"></i> Reset
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<ul class="nav nav-tabs  justify-content-center">
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveTab == "Room" ? "active" : "")"
+           href="@Url.Action("ShowRoomTable","FarmOwner")">
+            Rooms
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveTab == "Food" ? "active" : "")"
+           href="@Url.Action("ShowFoodServicesMealsTable","FarmOwner")">
+            Food Services
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.ActiveTab == "Activity" ? "active" : "")"
+           href="@Url.Action("ShowActivityTable","FarmOwner")">
+            Activities
+        </a>
+    </li>
+</ul>
+
+<!-- Export Buttons -->
+<div>
+    <button id="excelBtn" class="btn btn-outline-success btn-rounded">
+        <i class="fa fa-file-excel"></i>
+    </button>
+
+    <button id="pdfBtn" class="btn btn-outline-danger btn-rounded">
+        <i class="fa fa-file-pdf"></i>
+    </button>
+
+    <button id="printBtn" class="btn btn-outline-primary btn-rounded">
+        <i class="fa fa-print"></i>
+    </button>
+</div>
 
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between mb-3">
         <h3>Food Services (Meals)</h3>
+        <div class="d-flex justify-content-between mb-3">
+
+            <button class="btn btn-success"
+                    onclick="addFood()">
+                <i class="fa fa-plus"></i> Add Meal
+            </button>
+        </div>
     </div>
 
-    <table class="table table-bordered table-striped">
+    <table id="dataTable" class="table table-bordered table-hover text-center align-middle">
 
-        <thead class="table-dark">
+        <thead class="text-center">
             <tr>
-                <th>Food Code</th>
+                <th class="text-center" style="width:0px">
+                    <input type="checkbox" id="selectAll" />
+                </th>
+                <th>SR.No</th>
                 <th>Meal Type</th>
                 <th>Food Style</th>
+                <th>Farmhouse Name</th>
                 <th>Start Time</th>
                 <th>End Time</th>
                 <th>Action</th>
             </tr>
         </thead>
 
-        <tbody>
+        <tbody class="text-center">
+            @{
+                int sr = 1;
+            }
+
 
             @foreach (var item in Model)
             {
                 <tr>
 
-                    <td>@item.FoodServiceCode</td>
+                    @Html.HiddenFor(modelItem => item.FoodServiceCode)
+                    <td>
+                        <input type="checkbox" class="rowCheckbox" />
+                    </td>
+                    <td>@sr</td>
                     <td>@item.MealName</td>
                     <td>@item.FoodStyleName</td>
+                    <td>@item.FarmhouseName</td>
                     <td>@item.StartTime</td>
                     <td>@item.EndTime</td>
 
                     <td>
 
                         <!-- VIEW -->
-                        <button class="btn btn-warning btn-sm"
-                                onclick="viewFood('@item.FoodServiceCode')">
-                            View
+
+                        <button type="button" class="btn btn-outline-warning btn-rounded" onclick="viewFood('@item.FoodServiceCode')">
+                            <i class="fa fa-eye"></i> View
                         </button>
 
                         <!-- EDIT -->
-                        <button class="btn btn-info btn-sm"
-                                onclick="editFood('@item.FoodServiceCode')">
-                            Edit
+                        <button type="button" class="btn btn-outline-primary btn-rounded" onclick="editFood('@item.FoodServiceCode')">
+                            <i class="fa fa-pencil"></i> Edit
                         </button>
 
                     </td>
 
                 </tr>
+                sr++;
             }
 
         </tbody>
@@ -88,11 +244,10 @@
 <div class="modal fade" id="editModal">
     <div class="modal-dialog modal-lg">
 
-        <div class="modal-content">
+        <div class="modal-content ">
 
             <div class="modal-header">
-                <h5 class="modal-title">Edit Food Service</h5>
-
+                <h5 class="modal-title" id="foodModalTitle">Food Service</h5>
                 <button class="btn-close"
                         data-bs-dismiss="modal">
                 </button>
@@ -105,52 +260,263 @@
 </div>
 @section Scripts{
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <script>
 
-function viewFood(id)
-{
-    $.ajax({
+        /* SEARCH FILTER */
+        $('#tableSearch').keyup(function () {
 
-        url: '@Url.Action("FoodServiceView", "FarmOwner")',
+            table.search($(this).val()).draw();
 
-        type: 'GET',
+        });
 
-        data: { id: id },
+        /* MEAL TYPE FILTER */
+        $('#MealTypeFilter').change(function () {
 
-        success: function (data)
-        {
-            $("#viewModalBody").html(data);
+            var selected = $(this).find("option:selected").text();
 
-            var modal = new bootstrap.Modal(document.getElementById('viewModal'));
-            modal.show();
-        }
+            if (selected === "All") {
+                table.column(2).search('').draw();
+            }
+            else {
+                table.column(2).search('^' + selected + '$', true, false).draw();
+            }
 
-    });
+        });
+
+        /* FOOD STYLE FILTER */
+        $('#FoodTypeList').change(function () {
+
+            var selected = $(this).find("option:selected").text();
+
+            if (selected === "All") {
+                table.column(3).search('').draw();
+            }
+            else {
+                table.column(3).search('^' + selected + '$', true, false).draw();
+            }
+
+        });
+
+
+        /* RESET FILTER */
+        $('#refreshBtn').click(function () {
+
+            $('#tableSearch').val('');
+            $('#farmTypeFilter').val('');
+            $('#statusFilter').val('');
+
+            table.search('').columns().search('').draw();
+
+        });
+
+
+var table;
+
+function getDateTime() {
+    var now = new Date();
+    var date = now.toLocaleDateString();
+    var time = now.toLocaleTimeString();
+    return "Generated on: " + date + " " + time;
 }
 
+$(document).ready(function () {
 
-function editFood(id)
-{
-    $.ajax({
+    // DataTable initialize (ONLY ONCE)
+    table = $('#dataTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        dom: 'lfrtip',
+        buttons: [
 
-        url: '@Url.Action("FoodServiceModal", "FarmOwner")',
+            {
+                extend: 'excel',
+                text: 'Excel',
+                messageTop: function () {
+                    return getDateTime();
+                },
 
-        type: 'GET',
+                exportOptions: {
+                    columns: [1, 2, 3, 4, 5],
+                    rows: function (idx, data, node) {
 
-        data: { id: id },
+                        var selected = $('.rowCheckbox:checked').length;
 
-        success: function (data)
-        {
-            $("#editModalBody").html(data);
+                        if (selected === 0) {
+                            alert("Please select at least one booking.");
+                            return false;
+                        }
 
-            var modal = new bootstrap.Modal(document.getElementById('editModal'));
-            modal.show();
-        }
+                        return $(node).find('.rowCheckbox').prop('checked');
+                    },
+
+                    format: {
+                        body: function (data, row, column, node) {
+
+                            // Remove HTML tags (for Status column)
+                            var text = $('<div>').html(data).text();
+
+                            // Serial Number Reset
+                            if (column === 0) {
+                                return row + 1;
+                            }
+
+                            return text;
+                        }
+                    }
+                },
+                action: function (e, dt, button, config) {
+
+                    var selected = $('.rowCheckbox:checked').length;
+
+                    if (selected === 0) {
+                        alert("Please select at least one booking.");
+                        return;
+                    }
+
+                    if (!confirm("Download Excel file?"))
+                        return;
+
+                    $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                }
+            },
+
+            {
+                extend: 'pdf',
+                text: 'PDF',
+                messageTop: function () {
+                    return getDateTime();
+                },
+
+                exportOptions: {
+                    columns: [1, 2, 3, 4, 5],
+                    rows: function (idx, data, node) {
+
+                        var selected = $('.rowCheckbox:checked').length;
+
+                        if (selected === 0) {
+                            alert("Please select at least one booking.");
+                            return false;
+                        }
+
+                        return $(node).find('.rowCheckbox').prop('checked');
+                    },
+
+                    format: {
+                        body: function (data, row, column, node) {
+
+                            // Remove HTML tags (for Status column)
+                            var text = $('<div>').html(data).text();
+
+                            // Serial Number Reset
+                            if (column === 0) {
+                                return row + 1;
+                            }
+
+                            return text;
+                        }
+                    }
+                },
+
+                action: function (e, dt, button, config) {
+
+                    var selected = $('.rowCheckbox:checked').length;
+
+                    if (selected === 0) {
+                        alert("Please select at least one booking.");
+                        return;
+                    }
+
+                    if (!confirm("Download PDF file?"))
+                        return;
+
+                    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                }
+            },
+
+            {
+                extend: 'print',
+                text: 'Print',
+                exportOptions: {
+                    columns: [1,2,3,4,5]
+                }
+            }
+
+        ]
     });
+
+    // Export Buttons
+    $('#excelBtn').click(function () {
+        table.button('.buttons-excel').trigger();
+    });
+
+    $('#pdfBtn').click(function () {
+        table.button('.buttons-pdf').trigger();
+    });
+
+    $('#printBtn').click(function () {
+        table.button('.buttons-print').trigger();
+    });
+
+    // Select All
+    $('#selectAll').on('click', function () {
+        $('.rowCheckbox').prop('checked', this.checked);
+    });
+
+    // Row Checkbox
+    $(document).on("change", ".rowCheckbox", function () {
+
+        let total = $(".rowCheckbox").length;
+        let checked = $(".rowCheckbox:checked").length;
+
+        $("#selectAll").prop("checked", total === checked);
+
+    });
+
+});
+
+// View Modal
+function viewFood(id) {
+
+    $.get('@Url.Action("FoodServiceView","FarmOwner")', { id: id }, function (data) {
+
+        $("#viewModalBody").html(data);
+
+        var modal = new bootstrap.Modal(document.getElementById('viewModal'));
+        modal.show();
+
+    });
+
 }
 
+// Edit Modal
+function editFood(id) {
+
+    $.get('@Url.Action("FoodServiceModal","FarmOwner")', { id: id }, function (data) {
+
+        $("#foodModalTitle").text("Edit Food Service");
+        $("#editModalBody").html(data);
+
+        var modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+
+    });
+
+}
+
+// Add Modal
+function addFood() {
+
+    $.get('@Url.Action("FoodServiceModal","FarmOwner")', function (data) {
+
+        $("#foodModalTitle").text("Add Food Service");
+        $("#editModalBody").html(data);
+
+        var modal = new bootstrap.Modal(document.getElementById('editModal'));
+        modal.show();
+
+    });
+
+}
     </script>
 
 }
