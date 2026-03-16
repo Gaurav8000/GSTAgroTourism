@@ -1,114 +1,262 @@
 ﻿@model AgroClassLib.FarmOwner.ServiceManagement
 
-@using (Html.BeginForm("SaveorEditFood", "FarmOwner",
-        FormMethod.Post,
-        new { enctype = "multipart/form-data", id = "foodForm" }))
+<style>
+
+    .error-border {
+        border: 2px solid red !important;
+    }
+
+    .valid-border {
+        border: 2px solid green !important;
+    }
+
+    .error-msg {
+        color: red;
+        font-size: 13px;
+    }
+</style>
+
+
+@using (Html.BeginForm("SaveorEditFoodGS", "FarmOwner",
+FormMethod.Post,
+new { enctype = "multipart/form-data", id = "foodForm" }))
 {
+
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.FoodServiceCode)
     @Html.HiddenFor(m => m.ImageFile)
 
-    <div class="container-fluid ">
+    <div class="container-fluid">
 
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
+
         <!-- Meal Type -->
+
         <div class="form-group row mb-3">
+
             <label class="col-md-3 col-form-label">Meal Type</label>
+
             <div class="col-md-9">
+
                 @Html.DropDownListFor(m => m.MealTypeCode,
                 ViewBag.MealTypeList as SelectList,
                 "-Select Meal Type-",
-                new { @class = "form-control" })
+                new { @class = "form-control", id = "MealTypeCode" })
+
+                <small class="error-msg"></small>
+
             </div>
+
         </div>
 
+
         <!-- Food Style -->
+
         <div class="form-group row mb-3">
+
             <label class="col-md-3 col-form-label">Food Style</label>
+
             <div class="col-md-9">
+
                 @Html.DropDownListFor(m => m.FoodStyleCode,
                 ViewBag.FoodTypeList as SelectList,
                 "-Select Food Style-",
-                new { @class = "form-control" })
+                new { @class = "form-control", id = "FoodStyleCode" })
+
+                <small class="error-msg"></small>
+
             </div>
+
         </div>
+
 
         <!-- Farmhouse -->
+
         <div class="form-group row mb-3">
+
             <label class="col-md-3 col-form-label">Farmhouse</label>
+
             <div class="col-md-9">
+
                 @Html.DropDownListFor(m => m.FarmhouseCode,
-     ViewBag.FarmList as SelectList,
-     "-Select Farm-",
-     new { @class = "form-control" })
+                ViewBag.FarmList as SelectList,
+                "-Select Farm-",
+                new { @class = "form-control", id = "FarmhouseCode" })
+
+                <small class="error-msg"></small>
+
             </div>
+
         </div>
+
 
         <!-- Start Time -->
+
         <div class="form-group row mb-3">
+
             <label class="col-md-3 col-form-label">Start Time</label>
+
             <div class="col-md-9">
+
                 @Html.TextBoxFor(m => m.StartTime,
-                new { @class = "form-control", type = "time" })
+                new { @class = "form-control", type = "time", id = "StartTime" })
+
+                <small class="error-msg"></small>
+
             </div>
+
         </div>
+
 
         <!-- End Time -->
+
         <div class="form-group row mb-3">
+
             <label class="col-md-3 col-form-label">End Time</label>
+
             <div class="col-md-9">
+
                 @Html.TextBoxFor(m => m.EndTime,
-                new { @class = "form-control", type = "time" })
+                new { @class = "form-control", type = "time", id = "EndTime" })
+
+                <small class="error-msg"></small>
+
             </div>
+
         </div>
 
-        <!-- Image Upload -->
+
+        <!-- Image -->
+
         <div class="form-group row mb-3">
+
             <label class="col-md-3 col-form-label">Upload Image</label>
+
             <div class="col-md-9">
 
-                <input type="file" name="ImageUpload" class="form-control" />
+                <input type="file"
+                       name="ImageUpload"
+                       class="form-control" />
 
                 @if (!string.IsNullOrEmpty(Model?.ImageFile))
                 {
                     <div class="mt-2">
+
                         <img src="@Url.Content(Model.ImageFile)"
                              width="120"
                              height="120"
                              class="img-thumbnail" />
+
                     </div>
                 }
 
             </div>
+
         </div>
 
+
         <!-- Buttons -->
+
         <div class="form-group row mb-3">
+
             <div class="col-md-9 offset-md-3">
-                <button type="submit" class="btn btn-outline-primary btn-rounded">
+
+                <button type="submit"
+                        class="btn btn-outline-primary btn-rounded">
+
                     @(string.IsNullOrEmpty(Model?.FoodServiceCode) ? "Save" : "Update")
+
                     <i class="fa fa-pencil"></i>
+
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-rounded">
+
+
+                <button type="button"
+                        class="btn btn-outline-danger btn-rounded">
+
                     <i class="fa fa-times"></i> Cancel
+
                 </button>
 
             </div>
+
         </div>
 
+
     </div>
+
 }
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
 
+
+    /* FIELD VALIDATION */
+
+    function validateField(input, message) {
+
+        var value = ($(input).val() || "").trim();
+
+        var error = $(input).next(".error-msg");
+
+        if (value === "") {
+
+            $(input).removeClass("valid-border")
+                .addClass("error-border");
+
+            error.text(message);
+
+            return false;
+
+        }
+
+        else {
+
+            $(input).removeClass("error-border")
+                .addClass("valid-border");
+
+            error.text("");
+
+            return true;
+
+        }
+
+    }
+
+
+
+    /* FORM VALIDATION */
+
+    function validateForm() {
+
+        var r1 = validateField("#MealTypeCode", "Meal Type Required");
+        var r2 = validateField("#FoodStyleCode", "Food Style Required");
+        var r3 = validateField("#FarmhouseCode", "Farmhouse Required");
+        var r4 = validateField("#StartTime", "Start Time Required");
+        var r5 = validateField("#EndTime", "End Time Required");
+
+        return r1 && r2 && r3 && r4 && r5;
+
+    }
+
+
+
+    /* AJAX SUBMIT */
+
     $(document).on("submit", "#foodForm", function (e) {
+
+        if (!validateForm()) {
+
+            e.preventDefault();
+            return false;
+
+        }
 
         e.preventDefault();
 
@@ -131,13 +279,17 @@
 
                     Swal.fire({
                         icon: "success",
-                        title: "Success!",
+                        title: "Success",
                         text: "Record Saved Successfully"
                     }).then(function () {
+
                         location.reload();
+
                     });
 
-                } else {
+                }
+
+                else {
 
                     Swal.fire("Error", result.message, "error");
 
@@ -148,6 +300,5 @@
         });
 
     });
-
 
 </script>

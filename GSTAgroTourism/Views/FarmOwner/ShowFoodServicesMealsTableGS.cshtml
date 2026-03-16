@@ -15,6 +15,7 @@
             background: linear-gradient(90deg,#1f3b63,#2f5d9a);
             color: white;
             font-size: 15px;
+            text-align:center;
         }
 
         #dataTable tbody tr:hover {
@@ -56,6 +57,11 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         padding: 5px 10px;
+    }
+    tr.group {
+        background: #e9f1ff;
+        font-weight: bold;
+        cursor: pointer;
     }
 </style>
 
@@ -105,14 +111,14 @@ new { @class = "form-select", id = "FoodTypeList" }
 <ul class="nav nav-tabs  justify-content-center">
     <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveTab == "Room" ? "active" : "")"
-           href="@Url.Action("ShowRoomTable","FarmOwner")">
+           href="@Url.Action("ShowRoomTableGS","FarmOwner")">
             Rooms
         </a>
     </li>
 
     <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveTab == "Food" ? "active" : "")"
-           href="@Url.Action("ShowFoodServicesMealsTable","FarmOwner")">
+           href="@Url.Action("ShowFoodServicesMealsTableGS","FarmOwner")">
             Food Services
         </a>
     </li>
@@ -160,7 +166,7 @@ new { @class = "form-select", id = "FoodTypeList" }
                 <th class="text-center" style="width:0px">
                     <input type="checkbox" id="selectAll" />
                 </th>
-                <th>SR.No</th>
+                <th>Sr.No</th>
                 <th>Meal Type</th>
                 <th>Food Style</th>
                 <th>Farmhouse Name</th>
@@ -301,11 +307,21 @@ new { @class = "form-select", id = "FoodTypeList" }
         /* RESET FILTER */
         $('#refreshBtn').click(function () {
 
+            // Reset search box
             $('#tableSearch').val('');
-            $('#farmTypeFilter').val('');
-            $('#statusFilter').val('');
 
+            // Reset dropdowns
+            $('#MealTypeFilter').val('');
+            $('#FoodTypeList').val('');
+
+            // Reset DataTable filters
             table.search('').columns().search('').draw();
+
+            // Uncheck all row checkboxes
+            $('.rowCheckbox').prop('checked', false);
+
+            // Uncheck Select All
+            $('#selectAll').prop('checked', false);
 
         });
 
@@ -321,11 +337,38 @@ function getDateTime() {
 
 $(document).ready(function () {
 
-    // DataTable initialize (ONLY ONCE)
     table = $('#dataTable').DataTable({
         responsive: true,
-        pageLength: 10,
+        pageLength: 25,
         dom: 'lfrtip',
+
+        columnDefs: [
+            { visible: false, targets: 4 } // Hide Farmhouse column
+        ],
+
+        order: [[4, 'asc']],
+
+        drawCallback: function (settings) {
+
+            var api = this.api();
+            var rows = api.rows({ page: 'current' }).nodes();
+            var last = null;
+
+            api.column(4, { page: 'current' }).data().each(function (group, i) {
+
+                if (last !== group) {
+
+                    $(rows).eq(i).before(
+                        '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
+                    );
+
+                    last = group;
+                }
+
+            });
+
+        },
+
         buttons: [
 
             {
@@ -352,10 +395,8 @@ $(document).ready(function () {
                     format: {
                         body: function (data, row, column, node) {
 
-                            // Remove HTML tags (for Status column)
                             var text = $('<div>').html(data).text();
 
-                            // Serial Number Reset
                             if (column === 0) {
                                 return row + 1;
                             }
@@ -404,10 +445,8 @@ $(document).ready(function () {
                     format: {
                         body: function (data, row, column, node) {
 
-                            // Remove HTML tags (for Status column)
                             var text = $('<div>').html(data).text();
 
-                            // Serial Number Reset
                             if (column === 0) {
                                 return row + 1;
                             }
@@ -437,11 +476,12 @@ $(document).ready(function () {
                 extend: 'print',
                 text: 'Print',
                 exportOptions: {
-                    columns: [1,2,3,4,5]
+                    columns: [1, 2, 3, 4, 5]
                 }
             }
 
         ]
+
     });
 
     // Export Buttons
@@ -477,7 +517,7 @@ $(document).ready(function () {
 // View Modal
 function viewFood(id) {
 
-    $.get('@Url.Action("FoodServiceView","FarmOwner")', { id: id }, function (data) {
+    $.get('@Url.Action("FoodServiceViewGS","FarmOwner")', { id: id }, function (data) {
 
         $("#viewModalBody").html(data);
 
@@ -491,7 +531,7 @@ function viewFood(id) {
 // Edit Modal
 function editFood(id) {
 
-    $.get('@Url.Action("FoodServiceModal","FarmOwner")', { id: id }, function (data) {
+    $.get('@Url.Action("FoodServiceModalGS","FarmOwner")', { id: id }, function (data) {
 
         $("#foodModalTitle").text("Edit Food Service");
         $("#editModalBody").html(data);
@@ -506,7 +546,7 @@ function editFood(id) {
 // Add Modal
 function addFood() {
 
-    $.get('@Url.Action("FoodServiceModal","FarmOwner")', function (data) {
+    $.get('@Url.Action("FoodServiceModalGS","FarmOwner")', function (data) {
 
         $("#foodModalTitle").text("Add Food Service");
         $("#editModalBody").html(data);
@@ -516,7 +556,18 @@ function addFood() {
 
     });
 
-}
+        }
+        $('#dataTable tbody').on('click', 'tr.group', function () {
+
+            var nextRows = $(this).nextUntil('.group');
+
+            if (nextRows.is(':visible')) {
+                nextRows.hide();
+            } else {
+                nextRows.show();
+            }
+
+        });
     </script>
 
 }

@@ -16,11 +16,19 @@ namespace AgroClassLib.FarmOwner
         // ===== Food Service =====
 
 
-        public string FoodServiceCode { get; set; }
-        public string MealTypeCode { get; set; }
-        public string MealName { get; set; }
-        public string FoodStyleCode { get; set; }
-        public string FoodStyleName { get; set; }
+       public string FoodServiceCode { get; set; }
+
+
+    [Required(ErrorMessage = "Please select Meal Type")]
+    public string MealTypeCode { get; set; }
+
+    public string MealName { get; set; }
+
+
+    [Required(ErrorMessage = "Please select Food Style")]
+    public string FoodStyleCode { get; set; }
+
+    public string FoodStyleName { get; set; }
 
         // ===== Farm =====
         [Required(ErrorMessage = "Please select Farmhouse")]
@@ -28,20 +36,13 @@ namespace AgroClassLib.FarmOwner
         public string FarmhouseName { get; set; }
         public string FarmownerCode { get; set; }
 
-        // ===== Activity Service =====
-        public string ActivityCode { get; set; }
-        public string ActivityName { get; set; }
-        public string Duration { get; set; }
-        public decimal Price { get; set; }
-        public string StartDate { get; set; }
-        public string EndDate { get; set; }
-        public string Description { get; set; }
+      
 
         // ===== Common =====
         public string ImageFile { get; set; }
         public bool IsActive { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
         /////////
         ///public string RoomCode { get; set; }
 

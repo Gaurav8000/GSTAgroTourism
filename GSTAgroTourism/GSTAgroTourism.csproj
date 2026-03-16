@@ -190,13 +190,13 @@
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\FarmOwner\ShowFoodServicesMealsTable.cshtml" />
-    <Content Include="Views\FarmOwner\_FoodServiceModal.cshtml" />
-    <Content Include="Views\FarmOwner\RoomModal.cshtml" />
-    <Content Include="Views\FarmOwner\ShowRoomTable.cshtml" />
+    <Content Include="Views\FarmOwner\ShowFoodServicesMealsTableGS.cshtml" />
+    <Content Include="Views\FarmOwner\FoodServiceModalGS.cshtml" />
+    <Content Include="Views\FarmOwner\RoomModalGS.cshtml" />
+    <Content Include="Views\FarmOwner\ShowRoomTableGS.cshtml" />
     <Content Include="Views\Shared\Farmowner.cshtml" />
-    <Content Include="Views\FarmOwner\FoodServiceView.cshtml" />
-    <Content Include="Views\FarmOwner\RoomModalView.cshtml" />
+    <Content Include="Views\FarmOwner\FoodServiceViewGS.cshtml" />
+    <Content Include="Views\FarmOwner\RoomModalViewGS.cshtml" />
     <Content Include="Views\FarmOwner\Index.cshtml" />
     <Content Include="Views\Home\Temp.cshtml" />
   </ItemGroup>

@@ -130,6 +130,31 @@ body {
     color: var(--text-light);
     font-size: 0.75rem;
 }
+
+
+/* validation error */
+.input-validation-error {
+    border: 2px solid red !important;
+}
+
+/* validation success */
+.input-validation-valid {
+    border: 2px solid green !important;
+}
+
+/* error message */
+.field-validation-error {
+    color: red;
+    font-size: 13px;
+}
+
+/* hide message when valid */
+.field-validation-valid {
+    display: none;
+}
+
+
+
 /* Animations */
 @keyframes fadeIn {
     from {

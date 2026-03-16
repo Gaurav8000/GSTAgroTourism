@@ -97,7 +97,7 @@
             <div class="col-md-9">
                 <input type="number"
                        name="Price"
-                       value="@Model.Price"
+                       value="@Model.PricePerNight"
                        class="form-control"
                        placeholder="Enter Price" />
             </div>
@@ -145,7 +145,7 @@
 
             <button type="button"
                     class="btn btn-outline-primary btn-rounded"
-                    onclick="saveRoom()">
+                    onclick="saveRoomGS()">
 
                 <i class="fa fa-save"></i>
                 @(string.IsNullOrEmpty(Model.RoomCode) ? "Save" : "Update")
@@ -163,7 +163,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 
-    function saveRoom() {
+    function saveRoomGS() {
 
         if (!validateForm()) {
             return;
@@ -173,7 +173,7 @@
 
         $.ajax({
 
-            url: '/FarmOwner/SaveRoom',
+            url: '/FarmOwner/SaveRoomGS',
 
             type: 'POST',
 

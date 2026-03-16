@@ -5,7 +5,6 @@ using System.Data;
 using System.Threading.Tasks;
 using AgroClassLib;
 using System.Data.SqlClient;
-
 namespace AgroClassLib.FarmOwner
 {
     public class BALFarmOwner : MSSQL
@@ -23,12 +22,12 @@ namespace AgroClassLib.FarmOwner
         // =====================================================
         // FETCH TABLE LIST
         // =====================================================
-        public async Task<List<ServiceManagement>> FoodServiceTable(string FarmOwnerCode)
+        public async Task<List<ServiceManagement>> FoodServiceTableGS(string FarmOwnerCode)
         {
             try
             {
                 Dictionary<string, string> dc = new Dictionary<string, string>();
-                dc.Add("@Flag", "FetchFood");
+                dc.Add("@Flag", "FetchFoodGS");
                 dc.Add("@FarmOwnerCode", FarmOwnerCode);
 
 
@@ -42,7 +41,6 @@ namespace AgroClassLib.FarmOwner
                         ServiceManagement obj = new ServiceManagement();
 
                         obj.FoodServiceCode = row["FoodServiceCode"]?.ToString();
-
                         // CODE (if needed later)
                         obj.MealTypeCode = row["MealTypeCode"]?.ToString();
                         obj.FoodStyleCode = row["FoodStyleCode"]?.ToString();
@@ -70,14 +68,14 @@ namespace AgroClassLib.FarmOwner
         // =====================================================
         // FETCH SINGLE RECORD FOR EDIT
         // =====================================================
-        public async Task<ServiceManagement> FetchFood(string FoodServiceCode)
+        public async Task<ServiceManagement> FetchFoodGS(string FoodServiceCode)
         {
             try
             {
                 ServiceManagement obj = new ServiceManagement();
 
                 Dictionary<string, string> dc = new Dictionary<string, string>();
-                dc.Add("@Flag", "FetchFoodByUser");
+                dc.Add("@Flag", "FetchFoodByUserGS");
                 dc.Add("@FoodServiceCode", FoodServiceCode);
                 using (SqlDataReader dr = await ExecuteStoreProcedureReturnDR("SPFarmowner", dc))
                 {
@@ -106,12 +104,12 @@ namespace AgroClassLib.FarmOwner
         // =====================================================
         // FETCH MEAL TYPE DROPDOWN
         // =====================================================
-        public async Task<List<ServiceManagement>> FetchFoodTypeList()
+        public async Task<List<ServiceManagement>> FetchFoodTypeListGS()
         {
             try
             {
                 Dictionary<string, string> dc = new Dictionary<string, string>();
-                dc.Add("@Flag", "FetchFoodTypeList");
+                dc.Add("@Flag", "FetchFoodTypeListGS");
 
                 DataSet ds = await ExecuteStoreProcedureReturnDS("SPFarmowner", dc);
                 List<ServiceManagement> list = new List<ServiceManagement>();
@@ -140,12 +138,12 @@ namespace AgroClassLib.FarmOwner
         // =====================================================
         // FETCH FOOD STYLE DROPDOWN
         // =====================================================
-        public async Task<List<ServiceManagement>> FetchFoodStyleList()
+        public async Task<List<ServiceManagement>> FetchFoodStyleListGS()
         {
             try
             {
                 Dictionary<string, string> dc = new Dictionary<string, string>();
-                dc.Add("@Flag", "FetchFoodStyleList");
+                dc.Add("@Flag", "FetchFoodStyleListGS");
 
                 DataSet ds = await ExecuteStoreProcedureReturnDS("SPFarmowner", dc);
                 List<ServiceManagement> list = new List<ServiceManagement>();
@@ -169,12 +167,12 @@ namespace AgroClassLib.FarmOwner
                 throw new Exception("Error while fetching food style list.", ex);
             }
         }
-        public async Task<List<ServiceManagement>> FetchUserFarms(ServiceManagement ser)
+        public async Task<List<ServiceManagement>> FetchUserFarmsGS(ServiceManagement ser)
         {
             try
             {
                 Dictionary<string, string> dc = new Dictionary<string, string>();
-                dc.Add("@Flag", "FetchUserFarms");
+                dc.Add("@Flag", "FetchUserFarmsGS");
                 dc.Add("@FarmOwnerCode", ser.FarmownerCode);
 
                 DataSet ds = await ExecuteStoreProcedureReturnDS("SPFarmowner", dc);
@@ -202,11 +200,11 @@ namespace AgroClassLib.FarmOwner
                 throw new Exception("Error while fetching farms.", ex);
             }
         }
-        public async Task UpdateFoodServiceTable(ServiceManagement obj)
+        public async Task UpdateFoodServiceTableGS(ServiceManagement obj)
         {
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "UpdateFoodServieTable");
+            dc.Add("@Flag", "UpdateFoodServieTableGS");
             dc.Add("@FoodServiceCode", obj.FoodServiceCode);
             dc.Add("@MealTypeCode", obj.MealTypeCode);
             dc.Add("@FoodStyleCode", obj.FoodStyleCode);
@@ -215,16 +213,16 @@ namespace AgroClassLib.FarmOwner
             dc.Add("@ImagePath", obj.ImageFile);
             await ExecuteNonQuery("SPFarmOwner", dc);
         }
-        public async Task SaveFoodServiceTable(ServiceManagement obj)
+        public async Task SaveFoodServiceTableGS(ServiceManagement obj)
         {
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "InsertFoodServiceTable");
+            dc.Add("@Flag", "InsertFoodServiceTableGS");
             dc.Add("@Farmhousecode", obj.FarmhouseCode);
             dc.Add("@MealTypeCode", obj.MealTypeCode);
             dc.Add("@FoodStyleCode", obj.FoodStyleCode);
-            dc.Add("@StartTime", obj.StartTime.ToString(@"hh\:mm\:ss"));
-            dc.Add("@EndTime", obj.EndTime.ToString(@"hh\:mm\:ss"));
+            dc.Add("@StartTime", obj.StartTime.ToString());
+            dc.Add("@EndTime", obj.EndTime.ToString());
             dc.Add("@ImagePath", obj.ImageFile ?? "");
 
             await ExecuteNonQuery("SPFarmOwner", dc);
@@ -234,11 +232,11 @@ namespace AgroClassLib.FarmOwner
         // ===========================================
         // FETCH ROOMS TABLE
         // ===========================================
-        public async Task<List<ServiceManagement>> FetchRoomTable(string FarmhouseCode)
+        public async Task<List<ServiceManagement>> FetchRoomTableGS(string FarmhouseCode)
         {
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "FetchRooms");
+            dc.Add("@Flag", "FetchRoomsGS");
             dc.Add("@FarmhouseCode", FarmhouseCode);
 
 
@@ -261,7 +259,7 @@ namespace AgroClassLib.FarmOwner
                         obj.Capacity = Convert.ToInt32(row["NumberOfGuests"]);
 
                     if (row["PricePerNight"] != DBNull.Value)
-                        obj.Price = Convert.ToDecimal(row["PricePerNight"]);
+                        obj.PricePerNight = Convert.ToDecimal(row["PricePerNight"]);
 
                     obj.ImageFile = row["ImagePath"]?.ToString();
 
@@ -276,13 +274,13 @@ namespace AgroClassLib.FarmOwner
         // ===========================================
         // FETCH SINGLE ROOM (FOR EDIT)
         // ===========================================
-        public async Task<ServiceManagement> FetchRoom(string RoomCode)
+        public async Task<ServiceManagement> FetchRoomGS(string RoomCode)
         {
             ServiceManagement obj = new ServiceManagement();
 
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "FetchRoomsById");
+            dc.Add("@Flag", "FetchRoomsByIdGS");
             dc.Add("@FarmRoomCode", RoomCode);
 
             using (SqlDataReader dr = await ExecuteStoreProcedureReturnDR("SPFarmOwner", dc))
@@ -296,7 +294,7 @@ namespace AgroClassLib.FarmOwner
                     obj.RoomTypeName= dr["RoomTypeName"]?.ToString();
                     obj.FarmhouseName = dr["FarmHouseName"]?.ToString();
                     obj.Capacity = Convert.ToInt32(dr["NumberOfGuests"]);
-                    obj.Price = Convert.ToDecimal(dr["PricePerNight"]);
+                    obj.PricePerNight = Convert.ToDecimal(dr["PricePerNight"]);
                     obj.ImageFile = dr["ImagePath"]?.ToString();
                 }
             }
@@ -308,15 +306,15 @@ namespace AgroClassLib.FarmOwner
         // ===========================================
         // INSERT ROOM
         // ===========================================
-        public async Task SaveRoom(ServiceManagement obj)
+        public async Task SaveRoomGS(ServiceManagement obj)
         {
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "InsertRoom");
+            dc.Add("@Flag", "InsertRoomGS");
             dc.Add("@FarmhouseCode", obj.FarmhouseCode);
             dc.Add("RoomTypeCode", obj.RoomTypeCode);
             dc.Add("@Capacity", obj.Capacity.ToString());
-            dc.Add("@Price", obj.Price.ToString());
+            dc.Add("@Price", obj.PricePerNight.ToString());
             dc.Add("@ImagePath", obj.ImageFile);
 
             await ExecuteNonQuery("SPFarmOwner", dc);
@@ -326,27 +324,27 @@ namespace AgroClassLib.FarmOwner
         // ===========================================
         // UPDATE ROOM
         // ===========================================
-        public async Task UpdateRoom(ServiceManagement obj)
+        public async Task UpdateRoomGS(ServiceManagement obj)
         {
             Dictionary<string, string> dc = new Dictionary<string, string>();
-            dc.Add("@Flag", "UpdateRoom");
+            dc.Add("@Flag", "UpdateRoomGS");
             dc.Add("@FarmRoomCode", obj.RoomCode);
             dc.Add("@RoomName", obj.RoomName);
             dc.Add("RoomTypeCode", obj.RoomTypeCode);
             dc.Add("@NumberOfGuests", obj.Capacity.ToString());
-            dc.Add("@PricePerNight", obj.Price.ToString());
+            dc.Add("@PricePerNight", obj.PricePerNight.ToString());
             dc.Add("@ImagePath", obj.ImageFile);
 
             await ExecuteNonQuery("SPFarmOwner", dc);
         }
-        // ===========================================
+        // =========================================
         // FETCH ROOM TYPE LIST
         // ===========================================
-        public async Task<List<ServiceManagement>> FetchRoomTypeList()
+        public async Task<List<ServiceManagement>> FetchRoomTypeListGS()
         {
             Dictionary<string, string> dc = new Dictionary<string, string>();
 
-            dc.Add("@Flag", "FetchRoomTypeList");
+            dc.Add("@Flag", "FetchRoomTypeListGS");
 
             DataSet ds = await ExecuteStoreProcedureReturnDS("SPFarmOwner", dc);
 

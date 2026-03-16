@@ -14,7 +14,6 @@ public class FarmOwnerController : Controller
         return View();
     }
 
-
     [HttpGet]
     public ActionResult Login()
     {
@@ -35,7 +34,7 @@ public class FarmOwnerController : Controller
             Session["OwnerCode"] = ds.Tables[0].Rows[0]["FarmOwnerCode"];
             Session["OwnerName"] = ds.Tables[0].Rows[0]["FullName"].ToString();
 
-            return RedirectToAction("ShowFoodServicesMealsTable", "FarmOwner");
+            return RedirectToAction("ShowFoodServicesMealsTableGS", "FarmOwner");
         }
         else if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
         {
@@ -52,44 +51,43 @@ public class FarmOwnerController : Controller
             return View("Index");
         }
     }
+    #region Gaurav
     // ==============================
     // SHOW TABLE
-    // =====
-
-    // =========================
-    public async Task<ActionResult> ShowFoodServicesMealsTable()
+    // ==============================
+    public async Task<ActionResult> ShowFoodServicesMealsTableGS()
     {
-      string  FarmOwnerCode = Session["OwnerCode"].ToString();
-        await LoadDropdowns();
+        string FarmOwnerCode = Session["OwnerCode"].ToString();
+        await LoadDropdownsGS();
         ViewBag.ActiveTab = "Food";
-        var list = await objbal.FoodServiceTable(FarmOwnerCode);
+        var list = await objbal.FoodServiceTableGS(FarmOwnerCode);
         return View(list);
     }
     // ==============================
     // MODAL (ADD / EDIT)
     // ==============================
-    public async Task<ActionResult> FoodServiceModal(string id)
+    public async Task<ActionResult> FoodServiceModalGS(string id)
     {
         ServiceManagement model = new ServiceManagement();
 
         if (!string.IsNullOrEmpty(id))
         {
-            model = await objbal.FetchFood(id);
+            model = await objbal.FetchFoodGS(id);
 
             if (model == null)
                 return HttpNotFound();
         }
 
-        await LoadDropdowns(model);
+        await LoadDropdownsGS(model);
 
-        return PartialView("_FoodServiceModal", model);
+        return PartialView("FoodServiceModalGS", model);
     }
 
     // ==============================
     // SAVE OR UPDATE
     // ==============================
     [HttpPost]
-    public async Task<ActionResult> SaveorEditFood(ServiceManagement model, HttpPostedFileBase ImageUpload)
+    public async Task<ActionResult> SaveorEditFoodGS(ServiceManagement model, HttpPostedFileBase ImageUpload)
     {
         try
         {
@@ -116,11 +114,11 @@ public class FarmOwnerController : Controller
 
             if (string.IsNullOrEmpty(model.FoodServiceCode))
             {
-                await objbal.SaveFoodServiceTable(model);
+                await objbal.SaveFoodServiceTableGS(model);
             }
             else
             {
-                await objbal.UpdateFoodServiceTable(model);
+                await objbal.UpdateFoodServiceTableGS(model);
             }
 
             return Json(new { success = true });
@@ -139,17 +137,17 @@ public class FarmOwnerController : Controller
     // ==============================
     // LOAD DROPDOWNS
     // ==============================
-    private async Task LoadDropdowns(ServiceManagement model = null)
+    private async Task LoadDropdownsGS(ServiceManagement model = null)
     {
-      string  FarmOwnerCode = Session["OwnerCode"].ToString();
+        string FarmOwnerCode = Session["OwnerCode"].ToString();
 
-        var mealList = await objbal.FetchFoodTypeList();
-        var foodList = await objbal.FetchFoodStyleList();
+        var mealList = await objbal.FetchFoodTypeListGS();
+        var foodList = await objbal.FetchFoodStyleListGS();
 
         ServiceManagement ser = new ServiceManagement();
         ser.FarmownerCode = FarmOwnerCode;
 
-        var farmList = await objbal.FetchUserFarms(ser);
+        var farmList = await objbal.FetchUserFarmsGS(ser);
 
         ViewBag.MealTypeList = new SelectList(
             mealList,
@@ -171,7 +169,7 @@ public class FarmOwnerController : Controller
             "FarmhouseName",
             model?.FarmhouseCode
         );
-        var roomTypeList = await objbal.FetchRoomTypeList();
+        var roomTypeList = await objbal.FetchRoomTypeListGS();
 
         ViewBag.RoomTypeList = new SelectList(
             roomTypeList,
@@ -182,38 +180,38 @@ public class FarmOwnerController : Controller
     }
 
     //////////////////////////////Meal End//////////////////////////////
-   
+
 
     // ==============================
     // SHOW ROOM TABLE
     // ==============================
-    public async Task<ActionResult> ShowRoomTable()
+    public async Task<ActionResult> ShowRoomTableGS()
     {
         string FarmOwnerCode = Session["OwnerCode"].ToString();
         ViewBag.ActiveTab = "Room";
-        await LoadDropdowns();
-        var list = await objbal.FetchRoomTable(FarmOwnerCode);
+        await LoadDropdownsGS();
+        var list = await objbal.FetchRoomTableGS(FarmOwnerCode);
         return View(list);
     }
 
     // ==============================
     // ROOM MODAL (ADD / EDIT)
     // ==============================
-    public async Task<ActionResult> RoomModal(string id)
+    public async Task<ActionResult> RoomModalGS(string id)
     {
         ServiceManagement model = new ServiceManagement();
 
         if (!string.IsNullOrEmpty(id))
         {
-            model = await objbal.FetchRoom(id);
+            model = await objbal.FetchRoomGS(id);
 
             if (model == null)
                 return HttpNotFound();
         }
 
-        await LoadRoomDropdown(model);
+        await LoadRoomDropdownGS(model);
 
-        return PartialView("RoomModal", model);
+        return PartialView("RoomModalGS", model);
     }
 
 
@@ -223,7 +221,7 @@ public class FarmOwnerController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     //Add and Edit Room Controller
-    public async Task<ActionResult> SaveRoom(ServiceManagement model, HttpPostedFileBase ImageUpload)
+    public async Task<ActionResult> SaveRoomGS(ServiceManagement model, HttpPostedFileBase ImageUpload)
     {
         try
         {
@@ -246,11 +244,11 @@ public class FarmOwnerController : Controller
 
             if (string.IsNullOrEmpty(model.RoomCode))
             {
-                await objbal.SaveRoom(model);
+                await objbal.SaveRoomGS(model);
             }
             else
             {
-                await objbal.UpdateRoom(model);
+                await objbal.UpdateRoomGS(model);
             }
 
             return Json(new { success = true });
@@ -261,9 +259,9 @@ public class FarmOwnerController : Controller
         }
     }
 
-    private async Task LoadRoomDropdown(ServiceManagement model = null)
+    private async Task LoadRoomDropdownGS(ServiceManagement model = null)
     {
-        var roomTypeList = await objbal.FetchRoomTypeList();
+        var roomTypeList = await objbal.FetchRoomTypeListGS();
 
         ViewBag.RoomTypeList = new SelectList(
             roomTypeList,
@@ -272,36 +270,37 @@ public class FarmOwnerController : Controller
             model?.RoomTypeCode
         );
     }
-    public async Task<ActionResult> FoodServiceView(string id)
+    public async Task<ActionResult> FoodServiceViewGS(string id)
     {
         ServiceManagement model = new ServiceManagement();
 
         if (!string.IsNullOrEmpty(id))
         {
-            model = await objbal.FetchFood(id);
+            model = await objbal.FetchFoodGS(id);
 
             if (model == null)
                 return HttpNotFound();
         }
 
-        await LoadDropdowns(model);
+        await LoadDropdownsGS(model);
 
-        return PartialView("FoodServiceView", model);
+        return PartialView("FoodServiceViewGS", model);
     }
-    public async Task<ActionResult> RoomModalView(string id)
+    public async Task<ActionResult> RoomModalViewGS(string id)
     {
         ServiceManagement model = new ServiceManagement();
 
         if (!string.IsNullOrEmpty(id))
         {
-            model = await objbal.FetchRoom(id);
+            model = await objbal.FetchRoomGS(id);
 
             if (model == null)
                 return HttpNotFound();
         }
 
-        await LoadDropdowns(model);
+        await LoadDropdownsGS(model);
 
-        return PartialView("RoomModalView", model);
+        return PartialView("RoomModalViewGS", model);
     }
+    #endregion
 }

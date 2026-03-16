@@ -17,6 +17,7 @@
             background: linear-gradient(90deg,#1f3b63,#2f5d9a);
             color: white;
             font-size: 15px;
+            text-align:center;
         }
 
         #dataTable tbody tr:hover {
@@ -58,6 +59,11 @@
         border: 1px solid #ddd;
         border-radius: 4px;
         padding: 5px 10px;
+    }
+    tr.group {
+        background: #e9f1ff;
+        font-weight: bold;
+        cursor: pointer;
     }
 </style>
 
@@ -108,14 +114,14 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
     <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveTab == "Room" ? "active" : "")"
-           href="@Url.Action("ShowRoomTable","FarmOwner")">
+           href="@Url.Action("ShowRoomTableGS","FarmOwner")">
             Rooms
         </a>
     </li>
 
     <li class="nav-item">
         <a class="nav-link @(ViewBag.ActiveTab == "Food" ? "active" : "")"
-           href="@Url.Action("ShowFoodServicesMealsTable","FarmOwner")">
+           href="@Url.Action("ShowFoodServicesMealsTableGS","FarmOwner")">
             Food Services
         </a>
     </li>
@@ -201,7 +207,7 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
                     <td>@item.FarmhouseName</td>
 
-                    <td>₹ @item.Price</td>
+                    <td>₹ @item.PricePerNight</td>
 
                     <td>
 
@@ -273,14 +279,51 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
         $(document).ready(function () {
 
-            // DataTable Initialize
             table = $('#dataTable').DataTable({
                 responsive: true,
-                pageLength: 10,
+                pageLength: 25,
                 dom: 'lfrtip',
-                ordering: false
-            });
+                ordering: false,
 
+                columnDefs: [
+                    { visible: false, targets: 5 } // Hide Farmhouse column
+                ],
+
+                order: [[5, 'asc']],
+
+                drawCallback: function (settings) {
+
+                    var api = this.api();
+                    var rows = api.rows({ page: 'current' }).nodes();
+                    var last = null;
+
+                    api.column(5, { page: 'current' }).data().each(function (group, i) {
+
+                        if (last !== group) {
+
+                            $(rows).eq(i).before(
+                                '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
+                            );
+
+                            last = group;
+                        }
+
+                    });
+
+                }
+
+            });
+            table.on('draw.dt', function () {
+
+                var PageInfo = table.page.info();
+
+                table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+
+                    cell.innerHTML = PageInfo.start + i + 1;
+
+                });
+
+            });
 
             /* SEARCH FILTER */
             $('#tableSearch').keyup(function () {
@@ -320,11 +363,19 @@ new { @class = "form-select", id = "FarmhouseFilter" }
             /* RESET FILTER */
             $('#refreshBtn').click(function () {
 
+                // Reset search & dropdown
                 $('#tableSearch').val('');
-                $('#farmTypeFilter').val('');
-                $('#statusFilter').val('');
+                $('#roomTypeFilter').val('');
+                $('#FarmhouseFilter').val('');
 
+                // Reset DataTable filters
                 table.search('').columns().search('').draw();
+
+                // Uncheck all row checkboxes
+                $('.rowCheckbox').prop('checked', false);
+
+                // Uncheck select all checkbox
+                $('#selectAll').prop('checked', false);
 
             });
 
@@ -375,7 +426,7 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
         function openRoomModal(id = "") {
 
-            $.get("/FarmOwner/RoomModal", { id: id }, function (data) {
+            $.get("/FarmOwner/RoomModalGS", { id: id }, function (data) {
 
                 $("#roomModalBody").html(data);
 
@@ -389,7 +440,7 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
         function openRoomView(id) {
 
-            $.get("/FarmOwner/RoomModalView", { id: id }, function (data) {
+            $.get("/FarmOwner/RoomModalViewGS", { id: id }, function (data) {
 
                 $("#roomViewBody").html(data);
 
@@ -399,7 +450,19 @@ new { @class = "form-select", id = "FarmhouseFilter" }
             });
 
         }
+        $('#dataTable tbody').on('click', 'tr.group', function () {
 
+            var rows = $(this).nextUntil('.group');
+
+            if (rows.is(':visible')) {
+                rows.hide();
+            } else {
+                rows.show();
+            }
+
+            table.draw(false);   // 🔥 pagination adjust hoil
+
+        });
     </script>
 
 }
