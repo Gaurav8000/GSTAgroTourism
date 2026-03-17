@@ -15,7 +15,7 @@
             background: linear-gradient(90deg,#1f3b63,#2f5d9a);
             color: white;
             font-size: 15px;
-            text-align:center;
+            text-align: center;
         }
 
         #dataTable tbody tr:hover {
@@ -58,13 +58,13 @@
         border-radius: 4px;
         padding: 5px 10px;
     }
+
     tr.group {
         background: #e9f1ff;
         font-weight: bold;
         cursor: pointer;
     }
 </style>
-
 <!-- FILTER SECTION -->
 <div class="card mb-3">
     <div class="card-body">
@@ -96,8 +96,6 @@ ViewBag.FoodTypeList as SelectList,
 new { @class = "form-select", id = "FoodTypeList" }
 )
             </div>
-
-
             <div class="col-md-3">
                 <label>&nbsp;</label>
                 <button id="refreshBtn" class="btn btn-outline-primary w-100">
@@ -265,9 +263,9 @@ new { @class = "form-select", id = "FoodTypeList" }
     </div>
 </div>
 @section Scripts{
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-
+        var exportSrNo = 0;
         /* SEARCH FILTER */
         $('#tableSearch').keyup(function () {
 
@@ -326,175 +324,236 @@ new { @class = "form-select", id = "FoodTypeList" }
         });
 
 
-var table;
-
-function getDateTime() {
-    var now = new Date();
-    var date = now.toLocaleDateString();
-    var time = now.toLocaleTimeString();
-    return "Generated on: " + date + " " + time;
-}
 
 $(document).ready(function () {
 
-    table = $('#dataTable').DataTable({
-        responsive: true,
-        pageLength: 25,
-        dom: 'lfrtip',
+    var table;
+    var exportSrNo = 0;
+    function getDateTime() {
+        var now = new Date();
+        var date = now.toLocaleDateString();
+        var time = now.toLocaleTimeString();
+        return "Generated on: " + date + " " + time;
+    }
 
-        columnDefs: [
-            { visible: false, targets: 4 } // Hide Farmhouse column
-        ],
+    $(document).ready(function () {
 
-        order: [[4, 'asc']],
+        table = $('#dataTable').DataTable({
+            responsive: true,
+            pageLength: 25,
+            dom: 'lfrtip',
+            ordering: false,
 
-        drawCallback: function (settings) {
+            columnDefs: [
+                { visible: false, targets: 4 }
+            ],
 
-            var api = this.api();
-            var rows = api.rows({ page: 'current' }).nodes();
-            var last = null;
+            order: [[5, 'asc']],
 
-            api.column(4, { page: 'current' }).data().each(function (group, i) {
+            drawCallback: function (settings) {
 
-                if (last !== group) {
+                var api = this.api();
+                var rows = api.rows({ page: 'current' }).nodes();
+                var last = null;
 
-                    $(rows).eq(i).before(
-                        '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
-                    );
+                api.column(4, { page: 'current' }).data().each(function (group, i) {
 
-                    last = group;
-                }
+                    if (last !== group) {
 
-            });
+                        $(rows).eq(i).before(
+                            '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
+                        );
 
-        },
-
-        buttons: [
-
-            {
-                extend: 'excel',
-                text: 'Excel',
-                messageTop: function () {
-                    return getDateTime();
-                },
-
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function (idx, data, node) {
-
-                        var selected = $('.rowCheckbox:checked').length;
-
-                        if (selected === 0) {
-                            alert("Please select at least one booking.");
-                            return false;
-                        }
-
-                        return $(node).find('.rowCheckbox').prop('checked');
-                    },
-
-                    format: {
-                        body: function (data, row, column, node) {
-
-                            var text = $('<div>').html(data).text();
-
-                            if (column === 0) {
-                                return row + 1;
-                            }
-
-                            return text;
-                        }
-                    }
-                },
-                action: function (e, dt, button, config) {
-
-                    var selected = $('.rowCheckbox:checked').length;
-
-                    if (selected === 0) {
-                        alert("Please select at least one booking.");
-                        return;
+                        last = group;
                     }
 
-                    if (!confirm("Download Excel file?"))
-                        return;
+                });
 
-                    $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                }
             },
 
-            {
-                extend: 'pdf',
-                text: 'PDF',
-                messageTop: function () {
-                    return getDateTime();
-                },
 
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5],
-                    rows: function (idx, data, node) {
+            buttons: [
 
-                        var selected = $('.rowCheckbox:checked').length;
+                /* ===== EXCEL ===== */
+                {
+                    extend: 'excelHtml5',
+                    className: 'buttons-excel',
 
-                        if (selected === 0) {
-                            alert("Please select at least one booking.");
-                            return false;
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5, 6],
+
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').prop('checked');
+                        },
+
+                        format: {
+                            body: function (data, row, column) {
+
+                                if (column === 0) {
+                                    exportSrNo++;
+                                    return exportSrNo;
+                                }
+
+                                return $('<div>').html(data).text();
+                            }
                         }
-
-                        return $(node).find('.rowCheckbox').prop('checked');
                     },
 
-                    format: {
-                        body: function (data, row, column, node) {
+                    action: function (e, dt, button, config) {
 
-                            var text = $('<div>').html(data).text();
+                        exportSrNo = 0;
 
-                            if (column === 0) {
-                                return row + 1;
-                            }
-
-                            return text;
+                        if ($('.rowCheckbox:checked').length === 0) {
+                            showToast("Please select at least one row!");
+                            return;
                         }
+
+                        // Excel export trigger
+                        $.fn.dataTable.ext.buttons.excelHtml5.action
+                            .call(this, e, dt, button, config);
+
+                        // ✅ SweetAlert AFTER export
+                        setTimeout(function () {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Excel Generated!',
+                                text: 'Your Excel file has been downloaded successfully.',
+                                confirmButtonColor: '#1f3b63'
+                            });
+                        }, 800);
                     }
                 },
 
-                action: function (e, dt, button, config) {
+                /* ===== PDF ===== */
+                {
+                    extend: 'pdfHtml5',
+                    className: 'buttons-pdf',
 
-                    var selected = $('.rowCheckbox:checked').length;
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5, 6],
 
-                    if (selected === 0) {
-                        alert("Please select at least one booking.");
-                        return;
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').prop('checked');
+                        },
+
+                        format: {
+                            body: function (data, row, column) {
+
+                                if (column === 0) {
+                                    exportSrNo++;
+                                    return exportSrNo;
+                                }
+
+                                return $('<div>').html(data).text();
+                            }
+                        }
+                    },
+
+
+                    customize: function (doc) {
+
+                        var now = new Date();
+                        var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                        doc.header = {
+                            columns: [
+                                { text: '', width: '*' },
+                                {
+                                    text: "Generated on: " + dateTime,
+                                    alignment: 'right',
+                                    margin: [0, 10, 20, 0],
+                                    fontSize: 10
+                                }
+                            ]
+                        };
+
+                        var colCount = doc.content[1].table.body[0].length;
+                        doc.content[1].table.widths = Array(colCount).fill('*');
+                        doc.content[1].alignment = 'center';
+                    },
+
+                    action: function (e, dt, button, config) {
+
+                        exportSrNo = 0;
+
+                        if ($('.rowCheckbox:checked').length === 0) {
+                            showToast("Please select at least one row!");
+                            return;
+                        }
+
+                        // PDF export trigger
+                        $.fn.dataTable.ext.buttons.pdfHtml5.action
+                            .call(this, e, dt, button, config);
+
+                        // ✅ SweetAlert AFTER export
+                        setTimeout(function () {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'PDF Generated!',
+                                text: 'Your PDF has been downloaded successfully.',
+                                confirmButtonColor: '#1f3b63'
+                            });
+                        }, 800); // delay important
                     }
+                },
 
-                    if (!confirm("Download PDF file?"))
-                        return;
+                /* ===== PRINT ===== */
+                {
+                    extend: 'print',
+                    className: 'buttons-print',
 
-                    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                    exportOptions: {
+                        columns: [1, 2, 3, 4, 5, 6],
+
+                        rows: function (idx, data, node) {
+                            return $(node).find('.rowCheckbox').prop('checked');
+                        },
+
+                        format: {
+                            body: function (data, row, column) {
+
+                                if (column === 0) {
+                                    exportSrNo++;
+                                    return exportSrNo;
+                                }
+
+                                return $('<div>').html(data).text();
+                            }
+                        }
+                    },
+
+                    action: function (e, dt, button, config) {
+
+                        exportSrNo = 0;
+
+                        if ($('.rowCheckbox:checked').length === 0) {
+                            showToast("Please select at least one row!");
+                            return;
+                        }
+
+                        $.fn.dataTable.ext.buttons.print.action
+                            .call(this, e, dt, button, config);
+                    }
                 }
-            },
 
-            {
-                extend: 'print',
-                text: 'Print',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5]
-                }
-            }
+            ]
 
-        ]
+        });
 
-    });
+        /* EXPORT BUTTONS */
 
-    // Export Buttons
-    $('#excelBtn').click(function () {
-        table.button('.buttons-excel').trigger();
-    });
+        $('#excelBtn').click(function () {
+            table.button('.buttons-excel').trigger();
+        });
 
-    $('#pdfBtn').click(function () {
-        table.button('.buttons-pdf').trigger();
-    });
+        $('#pdfBtn').click(function () {
+            table.button('.buttons-pdf').trigger();
+        });
 
-    $('#printBtn').click(function () {
-        table.button('.buttons-print').trigger();
+        $('#printBtn').click(function () {
+            table.button('.buttons-print').trigger();
+        });
+
     });
 
     // Select All
@@ -568,6 +627,27 @@ function addFood() {
             }
 
         });
+        function showToast(message, type = "info") {
+
+            let icon = "fa-circle-info";
+            let bg = "#17a2b8";
+
+            if (type === "success") { icon = "fa-circle-check"; bg = "#28a745"; }
+            if (type === "error") { icon = "fa-circle-xmark"; bg = "#dc3545"; }
+
+            let toast = `
+        <div style="min-width:250px;padding:12px;
+        background:${bg};color:#fff;border-radius:6px;
+        position:fixed;top:20px;right:20px;z-index:9999;">
+        <i class="fa ${icon}"></i> ${message}
+        </div>`;
+
+            let el = $(toast).appendTo('body');
+
+            setTimeout(() => {
+                el.fadeOut(500, function () { $(this).remove(); });
+            }, 3000);
+        }
     </script>
 
 }

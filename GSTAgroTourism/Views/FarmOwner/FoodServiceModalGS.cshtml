@@ -45,9 +45,7 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                 new { @class = "form-control", id = "MealTypeCode" })
 
                 <small class="error-msg"></small>
-
             </div>
-
         </div>
 
 
@@ -197,74 +195,17 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
 <script>
 
 
-    /* FIELD VALIDATION */
-
-    function validateField(input, message) {
-
-        var value = ($(input).val() || "").trim();
-
-        var error = $(input).next(".error-msg");
-
-        if (value === "") {
-
-            $(input).removeClass("valid-border")
-                .addClass("error-border");
-
-            error.text(message);
-
-            return false;
-
-        }
-
-        else {
-
-            $(input).removeClass("error-border")
-                .addClass("valid-border");
-
-            error.text("");
-
-            return true;
-
-        }
-
-    }
-
-
-
-    /* FORM VALIDATION */
-
-    function validateForm() {
-
-        var r1 = validateField("#MealTypeCode", "Meal Type Required");
-        var r2 = validateField("#FoodStyleCode", "Food Style Required");
-        var r3 = validateField("#FarmhouseCode", "Farmhouse Required");
-        var r4 = validateField("#StartTime", "Start Time Required");
-        var r5 = validateField("#EndTime", "End Time Required");
-
-        return r1 && r2 && r3 && r4 && r5;
-
-    }
-
-
-
     /* AJAX SUBMIT */
 
     $(document).on("submit", "#foodForm", function (e) {
-
-        if (!validateForm()) {
-
-            e.preventDefault();
-            return false;
-
-        }
-
-        e.preventDefault();
+          e.preventDefault();
 
         var form = $(this);
         var formData = new FormData(this);
 
-        $.ajax({
+      
 
+        $.ajax({
             url: form.attr("action"),
             type: "POST",
             data: formData,
@@ -282,21 +223,23 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                         title: "Success",
                         text: "Record Saved Successfully"
                     }).then(function () {
-
                         location.reload();
-
                     });
 
+                } else {
+
+                    // 🔥 SERVER VALIDATION ERRORS
+                    if (result.errors && result.errors.length > 0) {
+
+                        Swal.fire("Validation Error", result.errors.join("<br>"), "error");
+
+                    } else {
+
+                        Swal.fire("Error", result.message, "error");
+
+                    }
                 }
-
-                else {
-
-                    Swal.fire("Error", result.message, "error");
-
-                }
-
             }
-
         });
 
     });

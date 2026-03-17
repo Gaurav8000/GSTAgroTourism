@@ -56,7 +56,6 @@ namespace AgroClassLib.FarmOwner
 
         public string RoomTypeName { get; set; }
 
-
         [Required(ErrorMessage = "Please enter Room Name")]
         public string RoomName { get; set; }
 

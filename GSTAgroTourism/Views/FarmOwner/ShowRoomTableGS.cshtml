@@ -17,7 +17,7 @@
             background: linear-gradient(90deg,#1f3b63,#2f5d9a);
             color: white;
             font-size: 15px;
-            text-align:center;
+            text-align: center;
         }
 
         #dataTable tbody tr:hover {
@@ -60,6 +60,7 @@
         border-radius: 4px;
         padding: 5px 10px;
     }
+
     tr.group {
         background: #e9f1ff;
         font-weight: bold;
@@ -67,6 +68,7 @@
     }
 </style>
 
+<div id="customToastContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 <!-- FILTER SECTION -->
 <div class="card mb-3">
     <div class="card-body">
@@ -161,7 +163,6 @@ new { @class = "form-select", id = "FarmhouseFilter" }
         </button>
     </div>
     <!-- FILTER SECTION -->
-
     <!-- TABLE -->
     <table id="dataTable" class="table table-bordered table-hover text-center align-middle">
 
@@ -272,11 +273,11 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
 
 @section Scripts{
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
 
         var table;
-
+        var exportSrNo = 0;
         $(document).ready(function () {
 
             table = $('#dataTable').DataTable({
@@ -285,8 +286,172 @@ new { @class = "form-select", id = "FarmhouseFilter" }
                 dom: 'lfrtip',
                 ordering: false,
 
+                buttons: [
+
+                    // ===== EXCEL =====
+                    {
+                        extend: 'excelHtml5',
+                        className: 'buttons-excel',
+
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6],
+
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            },
+
+                            format: {
+                                body: function (data, row, column, node) {
+
+
+                                    if (column === 0) {
+                                        exportSrNo++;
+                                        return exportSrNo;
+                                    }
+
+                                    return $('<div>').html(data).text();
+                                }
+                            }
+                        },
+
+                        action: function (e, dt, button, config) {
+
+                            var selected = $('.rowCheckbox:checked').length;
+
+                            if (selected === 0) {
+                                showToast("Please select at least one row!", "info");
+                                return;
+                            }
+
+                            exportSrNo = 0;
+
+                            $.fn.dataTable.ext.buttons.excelHtml5.action
+                                .call(this, e, dt, button, config);
+
+                            setTimeout(function () {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Excel Generated!',
+                                    text: 'Your Excel file has been downloaded successfully.',
+                                    confirmButtonColor: '#1f3b63'
+                                });
+                            }, 800);
+                        }
+                    },
+
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'buttons-pdf',
+
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6],
+
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            },
+
+                            format: {
+                                body: function (data, row, column, node) {
+
+                                    if (column === 0) {
+                                        exportSrNo++;
+                                        return exportSrNo;
+                                    }
+
+                                    return $('<div>').html(data).text();
+                                }
+                            },
+                            customize: function (doc) {
+
+                                var now = new Date();
+                                var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                                doc.header = {
+                                    columns: [
+                                        { text: '', width: '*' },
+                                        {
+                                            text: "Generated on: " + dateTime,
+                                            alignment: 'right',
+                                            margin: [0, 10, 20, 0],
+                                            fontSize: 10
+                                        }
+                                    ]
+                                };
+
+                                var colCount = doc.content[1].table.body[0].length;
+                                doc.content[1].table.widths = Array(colCount).fill('*');
+                            }
+                        },
+                        action: function (e, dt, button, config) {
+
+                            var selected = $('.rowCheckbox:checked').length;
+
+                            if (selected === 0) {
+                                showToast("Please select at least one row!", "info");
+                                return;
+                            }
+
+                            exportSrNo = 0;
+
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action
+                                .call(this, e, dt, button, config);
+
+                            setTimeout(function () {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'PDF Generated!',
+                                    text: 'Your PDF file has been downloaded successfully.',
+                                    confirmButtonColor: '#1f3b63'
+                                });
+                            }, 800);
+                        }
+                    },
+
+                    // ===== PRINT =====
+                    {
+                        extend: 'print',
+                        className: 'buttons-print',
+
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6],
+
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            },
+
+                            format: {
+                                body: function (data, row, column, node) {
+
+                                    if (column === 0) {
+                                        exportSrNo++;
+                                        return exportSrNo;
+                                    }
+
+                                    return $('<div>').html(data).text();
+                                }
+                            }
+                        },
+
+                        action: function (e, dt, button, config) {
+
+                            var selected = $('.rowCheckbox:checked').length;
+
+                            if (selected === 0) {
+                                showToast("Please select at least one row!", "info");
+                                return;
+                            }
+
+                            exportSrNo = 0;
+
+                            $.fn.dataTable.ext.buttons.print.action
+                                .call(this, e, dt, button, config);
+                        }
+                    }
+
+                ],
+
                 columnDefs: [
-                    { visible: false, targets: 5 } // Hide Farmhouse column
+                    { visible: false, targets: 5 }
                 ],
 
                 order: [[5, 'asc']],
@@ -463,6 +628,51 @@ new { @class = "form-select", id = "FarmhouseFilter" }
             table.draw(false);   // 🔥 pagination adjust hoil
 
         });
+        function showToast(message, type = "info") {
+
+            let icon = "fa-circle-info";
+            let bgColor = "#17a2b8"; // info
+
+            if (type === "success") {
+                icon = "fa-circle-check";
+                bgColor = "#28a745";
+            }
+            else if (type === "error") {
+                icon = "fa-circle-xmark";
+                bgColor = "#dc3545";
+            }
+            else if (type === "warning") {
+                icon = "fa-triangle-exclamation";
+                bgColor = "#ffc107";
+            }
+
+            let toast = `
+            <div class="toast-msg" style="
+                min-width:250px;
+                margin-bottom:10px;
+                padding:12px 15px;
+                background:${bgColor};
+                color:white;
+                border-radius:6px;
+                box-shadow:0 2px 8px rgba(0,0,0,0.2);
+                display:flex;
+                align-items:center;
+                gap:10px;
+            ">
+                <i class="fa ${icon}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+            let $toast = $(toast).appendTo('#customToastContainer');
+
+            setTimeout(function () {
+                $toast.fadeOut(500, function () {
+                    $(this).remove();
+                });
+            }, 3000);
+        }
     </script>
+
 
 }
