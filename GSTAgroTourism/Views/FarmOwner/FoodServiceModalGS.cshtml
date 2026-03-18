@@ -1,5 +1,4 @@
-﻿@model AgroClassLib.FarmOwner.ServiceManagement
-
+﻿@model AgroClassLib.FarmOwner.FoodServiceVM
 <style>
 
     .error-border {
@@ -187,9 +186,9 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
 }
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@*<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>*@
 
 
 <script>
@@ -198,12 +197,12 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
     /* AJAX SUBMIT */
 
     $(document).on("submit", "#foodForm", function (e) {
-          e.preventDefault();
+        e.preventDefault();
 
         var form = $(this);
         var formData = new FormData(this);
 
-      
+
 
         $.ajax({
             url: form.attr("action"),
@@ -216,7 +215,8 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
 
                 if (result.success) {
 
-                    $("#editModal").modal("hide");
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+                    modal.hide();
 
                     Swal.fire({
                         icon: "success",

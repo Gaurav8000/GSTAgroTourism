@@ -56,10 +56,12 @@
 
             <div class="col-md-9">
                 @Html.DropDownListFor(
-                m => m.RoomTypeCode,
-                ViewBag.RoomTypeList as SelectList,
-                "-Select Type-",
-                new { @class = "form-control" })
+   m => m.RoomTypeCode,
+   ViewBag.RoomTypeList as SelectList,
+   "-Select Type-",
+   new { @class = "form-control", id = "RoomTypeCode" })
+
+                <small class="text-danger error-msg"></small>
 
                 @Html.ValidationMessageFor(m => m.RoomTypeCode, "", new { @class = "text-danger" })
 
@@ -76,10 +78,12 @@
 
             <div class="col-md-9">
                 <input type="number"
+                       id="Capacity"
                        name="Capacity"
                        value="@Model.Capacity"
                        class="form-control"
                        placeholder="Enter Capacity" />
+                <small class="text-danger error-msg"></small>
             </div>
 
         </div>
@@ -93,10 +97,12 @@
 
             <div class="col-md-9">
                 <input type="number"
+                       id="Price"
                        name="Price"
                        value="@Model.PricePerNight"
                        class="form-control"
                        placeholder="Enter Price" />
+                <small class="text-danger error-msg"></small>
             </div>
 
         </div>
@@ -232,23 +238,30 @@
 
     function validateField(input, message) {
 
-        var value = $(input).val().trim();
-        var error = $(input).next(".error-msg");
+        var element = $(input);
+        var value = element.val();
+
+        if (value == undefined || value == null) {
+            value = "";
+        } else {
+            value = value.toString().trim();
+        }
+
+        var error = element.next(".error-msg");
 
         if (value == "") {
 
-            $(input).removeClass("valid-border").addClass("error-border");
+            element.removeClass("valid-border").addClass("error-border");
             error.text(message);
             return false;
 
         } else {
 
-            $(input).removeClass("error-border").addClass("valid-border");
+            element.removeClass("error-border").addClass("valid-border");
             error.text("");
             return true;
 
         }
-
     }
 
     function validateForm() {

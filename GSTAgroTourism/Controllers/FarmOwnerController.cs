@@ -69,18 +69,22 @@ public class FarmOwnerController : Controller
     // ==============================
     public async Task<ActionResult> FoodServiceModalGS(string id)
     {
-        ServiceManagement model = new ServiceManagement();
+        FoodServiceVM model = new FoodServiceVM();
 
         if (!string.IsNullOrEmpty(id))
         {
-            model = await objbal.FetchFoodGS(id);
+            var data = await objbal.FetchFoodGS(id);
 
-            if (model == null)
-                return HttpNotFound();
+            model.FoodServiceCode = data.FoodServiceCode;
+            model.MealTypeCode = data.MealTypeCode;
+            model.FoodStyleCode = data.FoodStyleCode;
+            model.FarmhouseCode = data.FarmhouseCode;
+            model.StartTime = data.StartTime;
+            model.EndTime = data.EndTime;
+            model.ImageFile = data.ImageFile;
         }
 
-        await LoadDropdownsGS(model);
-
+        await LoadDropdownsGS();
         return PartialView("FoodServiceModalGS", model);
     }
 
@@ -88,15 +92,24 @@ public class FarmOwnerController : Controller
     // SAVE OR UPDATE
     // ==============================
     [HttpPost]
-    public async Task<ActionResult> SaveorEditFoodGS(ServiceManagement model, HttpPostedFileBase ImageUpload)
+    public async Task<ActionResult> SaveorEditFoodGS(FoodServiceVM model, HttpPostedFileBase ImageUpload)
     {
         try
         {
-
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "Model state invalid" });
             }
+
+            ServiceManagement obj = new ServiceManagement();
+
+            obj.FoodServiceCode = model.FoodServiceCode;
+            obj.MealTypeCode = model.MealTypeCode;
+            obj.FoodStyleCode = model.FoodStyleCode;
+            obj.FarmhouseCode = model.FarmhouseCode;
+            obj.StartTime = model.StartTime;
+            obj.EndTime = model.EndTime;
+            obj.ImageFile = model.ImageFile;
 
             if (ImageUpload != null && ImageUpload.ContentLength > 0)
             {
@@ -111,16 +124,16 @@ public class FarmOwnerController : Controller
 
                 ImageUpload.SaveAs(fullPath);
 
-                model.ImageFile = "~/Content/img/" + fileName;
+                obj.ImageFile = "~/Content/img/" + fileName;
             }
 
             if (string.IsNullOrEmpty(model.FoodServiceCode))
             {
-                await objbal.SaveFoodServiceTableGS(model);
+                await objbal.SaveFoodServiceTableGS(obj);
             }
             else
             {
-                await objbal.UpdateFoodServiceTableGS(model);
+                await objbal.UpdateFoodServiceTableGS(obj);
             }
 
             return Json(new { success = true });
@@ -130,8 +143,7 @@ public class FarmOwnerController : Controller
             return Json(new
             {
                 success = false,
-                message = ex.Message,
-                stack = ex.StackTrace
+                message = ex.Message
             });
         }
     }
@@ -232,9 +244,7 @@ public class FarmOwnerController : Controller
             {
                 string fileName = Guid.NewGuid().ToString() +
                                   System.IO.Path.GetExtension(ImageUpload.FileName);
-
                 string path = Server.MapPath("~/Content/img/");
-
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
 

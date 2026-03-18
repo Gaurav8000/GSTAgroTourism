@@ -66,6 +66,25 @@ namespace AgroClassLib.FarmOwner
 
 
     }
+    public class FoodServiceVM
+    {
+        public string FoodServiceCode { get; set; }
+
+        [Required]
+        public string MealTypeCode { get; set; }
+
+        [Required]
+        public string FoodStyleCode { get; set; }
+
+        [Required]
+        public string FarmhouseCode { get; set; }
+
+        public TimeSpan? StartTime { get; set; }
+        public TimeSpan? EndTime { get; set; }
+
+        public string ImageFile { get; set; }
+    }
+
     #endregion
 
     #region LoginRS
