@@ -263,355 +263,357 @@ new { @class = "form-select", id = "FoodTypeList" }
     </div>
 </div>
 @section Scripts{
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
     <script>
-        var exportSrNo = 0;
-        /* SEARCH FILTER */
-        $('#tableSearch').keyup(function () {
 
-            table.search($(this).val()).draw();
+        var table; // ✅ global
 
-        });
+        $(document).ready(function () {
 
-        /* MEAL TYPE FILTER */
-        $('#MealTypeFilter').change(function () {
+            var exportSrNo = 0;
 
-            var selected = $(this).find("option:selected").text();
+            // ✅ INIT DATATABLE (ONLY ONCE)
+            table = $('#dataTable').DataTable({
+                responsive: true,
+                pageLength: 25,
+                dom: 'lfrtip',
+                ordering: false,
 
-            if (selected === "All") {
-                table.column(2).search('').draw();
-            }
-            else {
-                table.column(2).search('^' + selected + '$', true, false).draw();
-            }
+                buttons: [
 
-        });
+                    // ===== EXCEL =====
+                    {
+                        extend: 'excelHtml5',
+                        className: 'buttons-excel',
 
-        /* FOOD STYLE FILTER */
-        $('#FoodTypeList').change(function () {
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6],
 
-            var selected = $(this).find("option:selected").text();
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            },
 
-            if (selected === "All") {
-                table.column(3).search('').draw();
-            }
-            else {
-                table.column(3).search('^' + selected + '$', true, false).draw();
-            }
+                            format: {
+                                body: function (data, row, column, node) {
 
-        });
-
-
-        /* RESET FILTER */
-        $('#refreshBtn').click(function () {
-
-            // Reset search box
-            $('#tableSearch').val('');
-
-            // Reset dropdowns
-            $('#MealTypeFilter').val('');
-            $('#FoodTypeList').val('');
-
-            // Reset DataTable filters
-            table.search('').columns().search('').draw();
-
-            // Uncheck all row checkboxes
-            $('.rowCheckbox').prop('checked', false);
-
-            // Uncheck Select All
-            $('#selectAll').prop('checked', false);
-
-        });
-
-
-
-$(document).ready(function () {
-
-    var table;
-    var exportSrNo = 0;
-    function getDateTime() {
-        var now = new Date();
-        var date = now.toLocaleDateString();
-        var time = now.toLocaleTimeString();
-        return "Generated on: " + date + " " + time;
-    }
-
-    $(document).ready(function () {
-
-        table = $('#dataTable').DataTable({
-            responsive: true,
-            pageLength: 25,
-            dom: 'lfrtip',
-            ordering: false,
-
-            columnDefs: [
-                { visible: false, targets: 4 }
-            ],
-
-            order: [[5, 'asc']],
-
-            drawCallback: function (settings) {
-
-                var api = this.api();
-                var rows = api.rows({ page: 'current' }).nodes();
-                var last = null;
-
-                api.column(4, { page: 'current' }).data().each(function (group, i) {
-
-                    if (last !== group) {
-
-                        $(rows).eq(i).before(
-                            '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
-                        );
-
-                        last = group;
-                    }
-
-                });
-
-            },
-
-
-            buttons: [
-
-                // ===== EXCEL =====
-                {
-                    extend: 'excelHtml5',
-                    className: 'buttons-excel',
-
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6],
-
-                        rows: function (idx, data, node) {
-                            return $(node).find('.rowCheckbox').prop('checked');
-                        },
-
-                        format: {
-                            body: function (data, row, column, node) {
-
-                                if (column === 0) {
-                                    exportSrNo++;
-                                    return exportSrNo;
-                                }
-
-                                return $('<div>').html(data).text();
-                            }
-                        }
-                    },
-
-                    // 🔥 ADD DATE IN EXCEL
-                    customize: function (xlsx) {
-
-                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
-
-                        var now = new Date();
-                        var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
-
-                        $('sheetData', sheet).prepend(
-                            '<row r="1">' +
-                            '<c t="inlineStr" r="A1"><is><t></t></is></c>' +
-                            '<c t="inlineStr" r="B1"><is><t></t></is></c>' +
-                            '<c t="inlineStr" r="C1"><is><t></t></is></c>' +
-                            '<c t="inlineStr" r="D1"><is><t></t></is></c>' +
-                            '<c t="inlineStr" r="E1"><is><t></t></is></c>' +
-                            '<c t="inlineStr" r="F1"><is><t></t></is></c>' +
-                            '<c t="inlineStr" r="G1"><is><t>Generated on: ' + dateTime + '</t></is></c>' +
-                            '</row>'
-                        );
-                    },
-
-                    action: function (e, dt, button, config) {
-
-                        var selected = $('.rowCheckbox:checked').length;
-
-                        if (selected === 0) {
-                            showToast("Please select at least one row!", "info");
-                            return;
-                        }
-
-                        exportSrNo = 0;
-
-                        $.fn.dataTable.ext.buttons.excelHtml5.action
-                            .call(this, e, dt, button, config);
-
-                        setTimeout(function () {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Excel Generated!',
-                                text: 'Your Excel file has been downloaded successfully.',
-                                confirmButtonColor: '#1f3b63'
-                            });
-                        }, 800);
-                    }
-                },
-
-                // ===== PDF =====
-                {
-                    extend: 'pdfHtml5',
-                    className: 'buttons-pdf',
-
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6],
-
-                        rows: function (idx, data, node) {
-                            return $(node).find('.rowCheckbox').prop('checked');
-                        },
-
-                        format: {
-                            body: function (data, row, column, node) {
-
-                                if (column === 0) {
-                                    exportSrNo++;
-                                    return exportSrNo;
-                                }
-
-                                return $('<div>').html(data).text();
-                            }
-                        }
-                    },
-
-                    // 🔥 FIXED DATE HEADER
-                    customize: function (doc) {
-
-                        var now = new Date();
-                        var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
-
-                        doc.header = function () {
-                            return {
-                                columns: [
-                                    { text: '', width: '*' },
-                                    {
-                                        text: "Generated on: " + dateTime,
-                                        alignment: 'right',
-                                        margin: [0, 10, 20, 0],
-                                        fontSize: 10,
-                                        bold: true
+                                    if (column === 0) { // ✅ Sr.No
+                                        exportSrNo++;
+                                        return exportSrNo;
                                     }
-                                ]
-                            };
-                        };
 
-                        var colCount = doc.content[1].table.body[0].length;
-                        doc.content[1].table.widths = Array(colCount).fill('*');
-                    },
-
-                    action: function (e, dt, button, config) {
-
-                        var selected = $('.rowCheckbox:checked').length;
-
-                        if (selected === 0) {
-                            showToast("Please select at least one row!", "info");
-                            return;
-                        }
-
-                        exportSrNo = 0;
-
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action
-                            .call(this, e, dt, button, config);
-
-                        setTimeout(function () {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'PDF Generated!',
-                                text: 'Your PDF file has been downloaded successfully.',
-                                confirmButtonColor: '#1f3b63'
-                            });
-                        }, 800);
-                    }
-                },
-
-                // ===== PRINT =====
-                {
-                    extend: 'print',
-                    className: 'buttons-print',
-
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6],
-
-                        rows: function (idx, data, node) {
-                            return $(node).find('.rowCheckbox').prop('checked');
+                                    return $('<div>').html(data).text();
+                                }
+                            }
                         },
 
-                        format: {
-                            body: function (data, row, column, node) {
+                        action: function (e, dt, button, config) {
 
-                                if (column === 0) {
-                                    exportSrNo++;
-                                    return exportSrNo;
-                                }
+                            var selected = $('.rowCheckbox:checked').length;
 
-                                return $('<div>').html(data).text();
+                            if (selected === 0) {
+                                showToast("Please select at least one row!", "info");
+                                return;
                             }
+
+                            exportSrNo = 0;
+
+                            $.fn.dataTable.ext.buttons.excelHtml5.action
+                                .call(this, e, dt, button, config);
+
+                            setTimeout(function () {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Excel Generated!',
+                                    text: 'Your Excel file downloaded successfully'
+                                });
+                            }, 800);
+                        },
+
+                        // ✅ EXCEL DATE FIX
+                        customize: function (xlsx) {
+
+                            if (!xlsx || !xlsx.xl) return;
+
+                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+                            var now = new Date();
+                            var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                            $('sheetData', sheet).prepend(
+                                '<row r="1">' +
+                                '<c t="inlineStr" r="G1"><is><t>Generated on: ' + dateTime + '</t></is></c>' +
+                                '</row>'
+                            );
                         }
                     },
 
-                    // 🔥 ADD DATE IN PRINT
-                    customize: function (win) {
+                    // ===== PDF =====
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'buttons-pdf',
 
-                        var now = new Date();
-                        var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6],
 
-                        $(win.document.body).prepend(
-                            '<div style="text-align:right; font-size:12px; margin-bottom:10px;">' +
-                            'Generated on: ' + dateTime +
-                            '</div>'
-                        );
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            },
+
+                            format: {
+                                body: function (data, row, column, node) {
+
+                                    if (column === 0) {
+                                        exportSrNo++;
+                                        return exportSrNo;
+                                    }
+
+                                    return $('<div>').html(data).text();
+                                }
+                            }
+                        },
+
+                        action: function (e, dt, button, config) {
+
+                            var selected = $('.rowCheckbox:checked').length;
+
+                            if (selected === 0) {
+                                showToast("Please select at least one row!", "info");
+                                return;
+                            }
+
+                            exportSrNo = 0;
+
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action
+                                .call(this, e, dt, button, config);
+
+                            setTimeout(function () {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'PDF Generated!',
+                                    text: 'Your PDF downloaded successfully'
+                                });
+                            }, 800);
+                        },
+
+                        // ✅ PDF DATE FIX
+                        customize: function (doc) {
+
+                            var now = new Date();
+                            var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                            doc.header = function () {
+                                return {
+                                    columns: [
+                                        { text: '', width: '*' },
+                                        {
+                                            text: "Generated on: " + dateTime,
+                                            alignment: 'right',
+                                            margin: [0, 10, 20, 0],
+                                            fontSize: 10,
+                                            bold: true
+                                        }
+                                    ]
+                                };
+                            };
+                        }
                     },
 
-                    action: function (e, dt, button, config) {
+                    // ===== PRINT =====
+                    {
+                        extend: 'print',
+                        className: 'buttons-print',
 
-                        var selected = $('.rowCheckbox:checked').length;
+                        exportOptions: {
+                            columns: [1, 2, 3, 4, 5, 6],
 
-                        if (selected === 0) {
-                            showToast("Please select at least one row!", "info");
-                            return;
+                            rows: function (idx, data, node) {
+                                return $(node).find('.rowCheckbox').prop('checked');
+                            },
+
+                            format: {
+                                body: function (data, row, column, node) {
+
+                                    if (column === 0) {
+                                        exportSrNo++;
+                                        return exportSrNo;
+                                    }
+
+                                    return $('<div>').html(data).text();
+                                }
+                            }
+                        },
+
+                        action: function (e, dt, button, config) {
+
+                            var selected = $('.rowCheckbox:checked').length;
+
+                            if (selected === 0) {
+                                showToast("Please select at least one row!", "info");
+                                return;
+                            }
+
+                            exportSrNo = 0;
+
+                            $.fn.dataTable.ext.buttons.print.action
+                                .call(this, e, dt, button, config);
+                        },
+
+                        // ✅ PRINT DATE FIX
+                        customize: function (win) {
+
+                            var now = new Date();
+                            var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                            $(win.document.body).prepend(
+                                '<div style="text-align:right; font-size:12px; margin-bottom:10px;">' +
+                                'Generated on: ' + dateTime +
+                                '</div>'
+                            );
                         }
-
-                        exportSrNo = 0;
-
-                        $.fn.dataTable.ext.buttons.print.action
-                            .call(this, e, dt, button, config);
                     }
+
+                ],
+
+
+                columnDefs: [
+                    { visible: false, targets: 4 }
+                ],
+
+                order: [[5, 'asc']],
+
+                drawCallback: function () {
+
+                    var api = this.api();
+                    var rows = api.rows({ page: 'current' }).nodes();
+                    var last = null;
+
+                    api.column(4, { page: 'current' }).data().each(function (group, i) {
+
+                        if (last !== group) {
+
+                            $(rows).eq(i).before(
+                                '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
+                            );
+
+                            last = group;
+                        }
+
+                    });
+                }
+            });
+
+            // ✅ SEARCH
+            $('#tableSearch').keyup(function () {
+                table.search($(this).val()).draw();
+            });
+
+            // ✅ MEAL TYPE FILTER (FIXED)
+            $('#MealTypeFilter').change(function () {
+
+                var selected = $("#MealTypeFilter option:selected").text();
+                if (selected === "All") {
+                    table.column(2).search('').draw();
+                }
+                else {
+                    table.column(2).search('^' + selected + '$', true, false).draw();
                 }
 
-            ]
+            });
+
+            // ✅ FOOD STYLE FILTER (FIXED)
+            $('#FoodTypeList').change(function () {
+
+                var selected = $("#FoodTypeList option:selected").text();
+                if (selected === "All") {
+                    table.column(3).search('').draw();
+                }
+                else {
+                    table.column(3).search('^' + selected + '$', true, false).draw();
+                }
+
+            });
+
+            // ✅ RESET FILTER (FIXED)
+            $('#refreshBtn').click(function () {
+
+                $('#tableSearch').val('');
+
+                $('#MealTypeFilter').val('All');
+                $('#FoodTypeList').val('All');
+
+                table.search('').columns().search('').draw();
+
+                $('.rowCheckbox').prop('checked', false);
+                $('#selectAll').prop('checked', false);
+
+            });
+
+            // ✅ EXPORT BUTTONS
+            $('#excelBtn').click(function () {
+                table.button('.buttons-excel').trigger();
+            });
+
+            $('#pdfBtn').click(function () {
+                table.button('.buttons-pdf').trigger();
+            });
+
+            $('#printBtn').click(function () {
+                table.button('.buttons-print').trigger();
+            });
+
+            // ✅ SELECT ALL
+            $('#selectAll').on('click', function () {
+                $('.rowCheckbox').prop('checked', this.checked);
+            });
+
+            // ✅ ROW CHECK
+            $(document).on("change", ".rowCheckbox", function () {
+
+                let total = $(".rowCheckbox").length;
+                let checked = $(".rowCheckbox:checked").length;
+
+                $("#selectAll").prop("checked", total === checked);
+
+            });
 
         });
 
-        /* EXPORT BUTTONS */
+        // ✅ GROUP TOGGLE
+        $('#dataTable tbody').on('click', 'tr.group', function () {
 
-        $('#excelBtn').click(function () {
-            table.button('.buttons-excel').trigger();
+            var nextRows = $(this).nextUntil('.group');
+
+            if (nextRows.is(':visible')) {
+                nextRows.hide();
+            } else {
+                nextRows.show();
+            }
+
         });
 
-        $('#pdfBtn').click(function () {
-            table.button('.buttons-pdf').trigger();
-        });
+        // ✅ TOAST
+        function showToast(message, type = "info") {
 
-        $('#printBtn').click(function () {
-            table.button('.buttons-print').trigger();
-        });
+            let icon = "fa-circle-info";
+            let bg = "#17a2b8";
 
-    });
+            if (type === "success") { icon = "fa-circle-check"; bg = "#28a745"; }
+            if (type === "error") { icon = "fa-circle-xmark"; bg = "#dc3545"; }
 
-    // Select All
-    $('#selectAll').on('click', function () {
-        $('.rowCheckbox').prop('checked', this.checked);
-    });
+            let toast = `
+        <div style="min-width:250px;padding:12px;
+        background:${bg};color:#fff;border-radius:6px;
+        position:fixed;top:20px;right:20px;z-index:9999;">
+        <i class="fa ${icon}"></i> ${message}
+        </div>`;
 
-    // Row Checkbox
-    $(document).on("change", ".rowCheckbox", function () {
+            let el = $(toast).appendTo('body');
 
-        let total = $(".rowCheckbox").length;
-        let checked = $(".rowCheckbox:checked").length;
-
-        $("#selectAll").prop("checked", total === checked);
-
-    });
-
-});
-
-// View Modal
+            setTimeout(() => {
+                el.fadeOut(500, function () { $(this).remove(); });
+            }, 3000);
+        }
+        // View Modal
 function viewFood(id) {
 
     $.get('@Url.Action("FoodServiceViewGS","FarmOwner")', { id: id }, function (data) {
@@ -686,6 +688,6 @@ function addFood() {
                 el.fadeOut(500, function () { $(this).remove(); });
             }, 3000);
         }
-    </script>
 
+    </script>
 }

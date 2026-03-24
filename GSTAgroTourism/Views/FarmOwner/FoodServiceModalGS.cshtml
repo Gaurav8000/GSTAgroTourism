@@ -182,65 +182,60 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
 }
 
 
-@*<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 <script>
 
+    $(document).ready(function () {
 
-    /* AJAX SUBMIT */
+        $("#foodForm").submit(function (e) {
 
+            e.preventDefault();
 
-    var form = $(this);
+            var form = $(this);
 
-    // 🔥 VALIDATION CHECK
-    if (!form.valid()) {
-        Swal.fire("Validation Error", "Please fill all required fields", "warning");
-        return false;
-    }
+            if (!form.valid()) {
+                //Swal.fire("Validation Error", "Please fill all required fields", "warning");
+                return false;
+            }
 
-    e.preventDefault();
+            var formData = new FormData(this);
 
-    var formData = new FormData(this);
+            $.ajax({
+                url: form.attr("action"),
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
 
-        $.ajax({
-            url: form.attr("action"),
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
+                success: function (result) {
 
-            success: function (result) {
+                    if (result.success) {
 
-                if (result.success) {
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+                        modal.hide();
 
-                    var modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-                    modal.hide();
-
-                    Swal.fire({
-                        icon: "success",
-                        title: "Success",
-                        text: "Record Saved Successfully"
-                    }).then(function () {
-                        location.reload();
-                    });
-
-                } else {
-
-                    // 🔥 SERVER VALIDATION ERRORS
-                    if (result.errors && result.errors.length > 0) {
-
-                        Swal.fire("Validation Error", result.errors.join("<br>"), "error");
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: result.message
+                        }).then(function () {
+                            location.reload();
+                        });
 
                     } else {
 
                         Swal.fire("Error", result.message, "error");
-
                     }
                 }
-            }
+            });
+
         });
 
     });

@@ -285,7 +285,6 @@ new { @class = "form-select", id = "FarmhouseFilter" }
                 pageLength: 25,
                 dom: 'lfrtip',
                 ordering: false,
-                searching: false,
                 buttons: [
 
                     // ===== EXCEL =====
@@ -302,7 +301,6 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
                             format: {
                                 body: function (data, row, column, node) {
-
 
                                     if (column === 0) {
                                         exportSrNo++;
@@ -336,9 +334,26 @@ new { @class = "form-select", id = "FarmhouseFilter" }
                                     confirmButtonColor: '#1f3b63'
                                 });
                             }, 800);
+                        },
+
+                        customize: function (xlsx) {
+
+                            if (!xlsx || !xlsx.xl) return;
+
+                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+                            var now = new Date();
+                            var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                            $('sheetData', sheet).prepend(
+                                '<row r="1">' +
+                                '<c t="inlineStr" r="G1"><is><t>Generated on: ' + dateTime + '</t></is></c>' +
+                                '</row>'
+                            );
                         }
                     },
 
+                    // ===== PDF =====
                     {
                         extend: 'pdfHtml5',
                         className: 'buttons-pdf',
@@ -361,27 +376,49 @@ new { @class = "form-select", id = "FarmhouseFilter" }
                                     return $('<div>').html(data).text();
                                 }
                             },
+
+                            // 🔥 FIXED PDF DATE (IMPORTANT)
                             customize: function (doc) {
 
                                 var now = new Date();
                                 var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
 
-                                doc.header = {
-                                    columns: [
-                                        { text: '', width: '*' },
-                                        {
-                                            text: "Generated on: " + dateTime,
-                                            alignment: 'right',
-                                            margin: [0, 10, 20, 0],
-                                            fontSize: 10
-                                        }
-                                    ]
+                                // ✅ TOP SPACE FIX (VERY IMPORTANT)
+                                doc.pageMargins = [20, 70, 20, 30];
+
+                                // ✅ ADD TITLE (fix alignment issue)
+                                doc.content.splice(0, 0, {
+                                    text: "Stay Services (Rooms)",
+                                    alignment: "center",
+                                    fontSize: 14,
+                                    bold: true,
+                                    margin: [0, 0, 0, 10]
+                                });
+
+                                // ✅ HEADER (DATE)
+                                doc.header = function () {
+                                    return {
+                                        margin: [20, 20, 20, 0],
+                                        columns: [
+                                            { text: '' },
+                                            {
+                                                text: "Generated on: " + dateTime,
+                                                alignment: 'right',
+                                                fontSize: 10,
+                                                bold: true
+                                            }
+                                        ]
+                                    };
                                 };
 
-                                var colCount = doc.content[1].table.body[0].length;
-                                doc.content[1].table.widths = Array(colCount).fill('*');
+                                // ✅ SAFE TABLE WIDTH FIX
+                                if (doc.content[1] && doc.content[1].table) {
+                                    var colCount = doc.content[1].table.body[0].length;
+                                    doc.content[1].table.widths = Array(colCount).fill('*');
+                                }
                             }
                         },
+
                         action: function (e, dt, button, config) {
 
                             var selected = $('.rowCheckbox:checked').length;
@@ -445,11 +482,22 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
                             $.fn.dataTable.ext.buttons.print.action
                                 .call(this, e, dt, button, config);
+                        },
+
+                        customize: function (win) {
+
+                            var now = new Date();
+                            var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                            $(win.document.body).prepend(
+                                '<div style="text-align:right; font-size:12px; margin-bottom:10px;">' +
+                                'Generated on: ' + dateTime +
+                                '</div>'
+                            );
                         }
                     }
 
                 ],
-
                 columnDefs: [
                     { visible: false, targets: 5 }
                 ],

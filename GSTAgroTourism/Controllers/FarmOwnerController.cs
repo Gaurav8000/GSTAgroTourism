@@ -96,10 +96,14 @@ public class FarmOwnerController : Controller
     {
         try
         {
-            if (!ModelState.IsValid)
-            {
-                return Json(new { success = false, message = "Model state invalid" });
-            }
+            //if (!ModelState.IsValid)
+            //{
+            //    return Json(new
+            //    {
+            //        success = false,
+            //        message = "Please fill all required fields properly"
+            //    });
+            //}
 
             ServiceManagement obj = new ServiceManagement();
 
@@ -111,6 +115,7 @@ public class FarmOwnerController : Controller
             obj.EndTime = model.EndTime;
             obj.ImageFile = model.ImageFile;
 
+            // 🔥 Image Upload
             if (ImageUpload != null && ImageUpload.ContentLength > 0)
             {
                 string fileName = Path.GetFileName(ImageUpload.FileName);
@@ -127,16 +132,24 @@ public class FarmOwnerController : Controller
                 obj.ImageFile = "~/Content/img/" + fileName;
             }
 
+            string message = "";
+
             if (string.IsNullOrEmpty(model.FoodServiceCode))
             {
                 await objbal.SaveFoodServiceTableGS(obj);
+                message = "Record Saved Successfully";
             }
             else
             {
                 await objbal.UpdateFoodServiceTableGS(obj);
+                message = "Record Updated Successfully";
             }
 
-            return Json(new { success = true });
+            return Json(new
+            {
+                success = true,
+                message = message
+            });
         }
         catch (Exception ex)
         {
