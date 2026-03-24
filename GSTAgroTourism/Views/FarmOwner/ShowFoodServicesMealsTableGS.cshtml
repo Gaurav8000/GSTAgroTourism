@@ -374,7 +374,7 @@ $(document).ready(function () {
 
             buttons: [
 
-                /* ===== EXCEL ===== */
+                // ===== EXCEL =====
                 {
                     extend: 'excelHtml5',
                     className: 'buttons-excel',
@@ -387,7 +387,7 @@ $(document).ready(function () {
                         },
 
                         format: {
-                            body: function (data, row, column) {
+                            body: function (data, row, column, node) {
 
                                 if (column === 0) {
                                     exportSrNo++;
@@ -399,20 +399,41 @@ $(document).ready(function () {
                         }
                     },
 
+                    // 🔥 ADD DATE IN EXCEL
+                    customize: function (xlsx) {
+
+                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+
+                        var now = new Date();
+                        var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                        $('sheetData', sheet).prepend(
+                            '<row r="1">' +
+                            '<c t="inlineStr" r="A1"><is><t></t></is></c>' +
+                            '<c t="inlineStr" r="B1"><is><t></t></is></c>' +
+                            '<c t="inlineStr" r="C1"><is><t></t></is></c>' +
+                            '<c t="inlineStr" r="D1"><is><t></t></is></c>' +
+                            '<c t="inlineStr" r="E1"><is><t></t></is></c>' +
+                            '<c t="inlineStr" r="F1"><is><t></t></is></c>' +
+                            '<c t="inlineStr" r="G1"><is><t>Generated on: ' + dateTime + '</t></is></c>' +
+                            '</row>'
+                        );
+                    },
+
                     action: function (e, dt, button, config) {
 
-                        exportSrNo = 0;
+                        var selected = $('.rowCheckbox:checked').length;
 
-                        if ($('.rowCheckbox:checked').length === 0) {
-                            showToast("Please select at least one row!");
+                        if (selected === 0) {
+                            showToast("Please select at least one row!", "info");
                             return;
                         }
 
-                        // Excel export trigger
+                        exportSrNo = 0;
+
                         $.fn.dataTable.ext.buttons.excelHtml5.action
                             .call(this, e, dt, button, config);
 
-                        // ✅ SweetAlert AFTER export
                         setTimeout(function () {
                             Swal.fire({
                                 icon: 'success',
@@ -424,7 +445,7 @@ $(document).ready(function () {
                     }
                 },
 
-                /* ===== PDF ===== */
+                // ===== PDF =====
                 {
                     extend: 'pdfHtml5',
                     className: 'buttons-pdf',
@@ -437,7 +458,7 @@ $(document).ready(function () {
                         },
 
                         format: {
-                            body: function (data, row, column) {
+                            body: function (data, row, column, node) {
 
                                 if (column === 0) {
                                     exportSrNo++;
@@ -449,55 +470,57 @@ $(document).ready(function () {
                         }
                     },
 
-
+                    // 🔥 FIXED DATE HEADER
                     customize: function (doc) {
 
                         var now = new Date();
                         var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
 
-                        doc.header = {
-                            columns: [
-                                { text: '', width: '*' },
-                                {
-                                    text: "Generated on: " + dateTime,
-                                    alignment: 'right',
-                                    margin: [0, 10, 20, 0],
-                                    fontSize: 10
-                                }
-                            ]
+                        doc.header = function () {
+                            return {
+                                columns: [
+                                    { text: '', width: '*' },
+                                    {
+                                        text: "Generated on: " + dateTime,
+                                        alignment: 'right',
+                                        margin: [0, 10, 20, 0],
+                                        fontSize: 10,
+                                        bold: true
+                                    }
+                                ]
+                            };
                         };
 
                         var colCount = doc.content[1].table.body[0].length;
                         doc.content[1].table.widths = Array(colCount).fill('*');
-                        doc.content[1].alignment = 'center';
                     },
 
                     action: function (e, dt, button, config) {
 
-                        exportSrNo = 0;
+                        var selected = $('.rowCheckbox:checked').length;
 
-                        if ($('.rowCheckbox:checked').length === 0) {
-                            showToast("Please select at least one row!");
+                        if (selected === 0) {
+                            showToast("Please select at least one row!", "info");
                             return;
                         }
 
-                        // PDF export trigger
+                        exportSrNo = 0;
+
                         $.fn.dataTable.ext.buttons.pdfHtml5.action
                             .call(this, e, dt, button, config);
 
-                        // ✅ SweetAlert AFTER export
                         setTimeout(function () {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'PDF Generated!',
-                                text: 'Your PDF has been downloaded successfully.',
+                                text: 'Your PDF file has been downloaded successfully.',
                                 confirmButtonColor: '#1f3b63'
                             });
-                        }, 800); // delay important
+                        }, 800);
                     }
                 },
 
-                /* ===== PRINT ===== */
+                // ===== PRINT =====
                 {
                     extend: 'print',
                     className: 'buttons-print',
@@ -510,7 +533,7 @@ $(document).ready(function () {
                         },
 
                         format: {
-                            body: function (data, row, column) {
+                            body: function (data, row, column, node) {
 
                                 if (column === 0) {
                                     exportSrNo++;
@@ -522,14 +545,29 @@ $(document).ready(function () {
                         }
                     },
 
+                    // 🔥 ADD DATE IN PRINT
+                    customize: function (win) {
+
+                        var now = new Date();
+                        var dateTime = now.toLocaleDateString() + " " + now.toLocaleTimeString();
+
+                        $(win.document.body).prepend(
+                            '<div style="text-align:right; font-size:12px; margin-bottom:10px;">' +
+                            'Generated on: ' + dateTime +
+                            '</div>'
+                        );
+                    },
+
                     action: function (e, dt, button, config) {
 
-                        exportSrNo = 0;
+                        var selected = $('.rowCheckbox:checked').length;
 
-                        if ($('.rowCheckbox:checked').length === 0) {
-                            showToast("Please select at least one row!");
+                        if (selected === 0) {
+                            showToast("Please select at least one row!", "info");
                             return;
                         }
+
+                        exportSrNo = 0;
 
                         $.fn.dataTable.ext.buttons.print.action
                             .call(this, e, dt, button, config);

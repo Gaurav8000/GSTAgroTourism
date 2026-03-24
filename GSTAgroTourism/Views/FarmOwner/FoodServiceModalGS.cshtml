@@ -43,7 +43,7 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                 "-Select Meal Type-",
                 new { @class = "form-control", id = "MealTypeCode" })
 
-                <small class="error-msg"></small>
+                @Html.ValidationMessageFor(m => m.MealTypeCode, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -61,8 +61,7 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                 "-Select Food Style-",
                 new { @class = "form-control", id = "FoodStyleCode" })
 
-                <small class="error-msg"></small>
-
+                @Html.ValidationMessageFor(m => m.FoodStyleCode, "", new { @class = "text-danger" })
             </div>
 
         </div>
@@ -81,8 +80,7 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                 "-Select Farm-",
                 new { @class = "form-control", id = "FarmhouseCode" })
 
-                <small class="error-msg"></small>
-
+                @Html.ValidationMessageFor(m => m.FarmhouseCode, "", new { @class = "text-danger" })
             </div>
 
         </div>
@@ -99,8 +97,7 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                 @Html.TextBoxFor(m => m.StartTime,
                 new { @class = "form-control", type = "time", id = "StartTime" })
 
-                <small class="error-msg"></small>
-
+                @Html.ValidationMessageFor(m => m.StartTime, "", new { @class = "text-danger" })
             </div>
 
         </div>
@@ -117,8 +114,7 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
                 @Html.TextBoxFor(m => m.EndTime,
                 new { @class = "form-control", type = "time", id = "EndTime" })
 
-                <small class="error-msg"></small>
-
+                @Html.ValidationMessageFor(m => m.EndTime, "", new { @class = "text-danger" })
             </div>
 
         </div>
@@ -196,13 +192,18 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
 
     /* AJAX SUBMIT */
 
-    $(document).on("submit", "#foodForm", function (e) {
-        e.preventDefault();
 
-        var form = $(this);
-        var formData = new FormData(this);
+    var form = $(this);
 
+    // 🔥 VALIDATION CHECK
+    if (!form.valid()) {
+        Swal.fire("Validation Error", "Please fill all required fields", "warning");
+        return false;
+    }
 
+    e.preventDefault();
+
+    var formData = new FormData(this);
 
         $.ajax({
             url: form.attr("action"),

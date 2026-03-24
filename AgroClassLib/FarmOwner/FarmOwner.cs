@@ -79,7 +79,10 @@ namespace AgroClassLib.FarmOwner
         [Required]
         public string FarmhouseCode { get; set; }
 
+        [Required(ErrorMessage = "Please select Start Time")]
         public TimeSpan? StartTime { get; set; }
+
+        [Required(ErrorMessage = "Please select End Time")]
         public TimeSpan? EndTime { get; set; }
 
         public string ImageFile { get; set; }

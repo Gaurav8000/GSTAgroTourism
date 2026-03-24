@@ -119,54 +119,54 @@
 
     <script>
 
-        $(function () {
+        //$(function () {
 
-            $(document).on("submit", "#foodForm", function (e) {
+        //    $(document).on("submit", "#foodForm", function (e) {
 
-                e.preventDefault();
+        //        e.preventDefault();
 
-                var form = this;
-                var formData = new FormData(form);
+        //        var form = this;
+        //        var formData = new FormData(form);
 
-                $.ajax({
+        //        $.ajax({
 
-                    url: form.action,
-                    type: form.method,
-                    data: formData,
-                    processData: false,
-                    contentType: false,
+        //            url: form.action,
+        //            type: form.method,
+        //            data: formData,
+        //            processData: false,
+        //            contentType: false,
 
-                    success: function (result) {
+        //            success: function (result) {
 
-                        if (result.success) {
+        //                if (result.success) {
 
-                            $("#foodModal").modal('hide');
+        //                    $("#foodModal").modal('hide');
 
                             
 
-                            setTimeout(function () {
-                                location.reload();
-                            }, 1200);
+        //                    setTimeout(function () {
+        //                        location.reload();
+        //                    }, 1200);
 
-                        } else {
+        //                } else {
 
-                            $("#foodModalBody").html(result);
+        //                    $("#foodModalBody").html(result);
 
-                        }
+        //                }
 
-                    },
+        //            },
 
-                    error: function () {
+        //            error: function () {
 
-                        Swal.fire("Error", "Something went wrong", "error");
+        //                Swal.fire("Error", "Something went wrong", "error");
 
-                    }
+        //            }
 
-                });
+        //        });
 
-            });
+        //    });
 
-        });
+        //});
 
     </script>
 
