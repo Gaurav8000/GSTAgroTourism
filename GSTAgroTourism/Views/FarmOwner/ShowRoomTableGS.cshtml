@@ -101,12 +101,27 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 )
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 text-end">
                 <label>&nbsp;</label>
-                <button id="refreshBtn" class="btn btn-outline-primary w-100">
-                    <i class="fa fa-rotate-right"></i> Reset
+                <button id="refreshBtn" class="btn btn-outline-primary">
+                    <i class="fa fa-rotate-right"></i>
                 </button>
+                <!-- Export Buttons -->
+                
+                    <button id="excelBtn" class="btn btn-outline-success btn-rounded">
+                        <i class="fa fa-file-excel"></i>
+                    </button>
+
+                    <button id="pdfBtn" class="btn btn-outline-danger btn-rounded">
+                        <i class="fa fa-file-pdf"></i>
+                    </button>
+
+                    <button id="printBtn" class="btn btn-outline-primary btn-rounded">
+                        <i class="fa fa-print"></i>
+                    </button>
+                
             </div>
+          
 
         </div>
     </div>
@@ -136,22 +151,6 @@ new { @class = "form-select", id = "FarmhouseFilter" }
     </li>
 
 </ul>
-
-<!-- Export Buttons -->
-<div>
-    <button id="excelBtn" class="btn btn-outline-success btn-rounded">
-        <i class="fa fa-file-excel"></i>
-    </button>
-
-    <button id="pdfBtn" class="btn btn-outline-danger btn-rounded">
-        <i class="fa fa-file-pdf"></i>
-    </button>
-
-    <button id="printBtn" class="btn btn-outline-primary btn-rounded">
-        <i class="fa fa-print"></i>
-    </button>
-</div>
-
 <div class="container mt-4">
 
     <!-- HEADER -->
@@ -238,26 +237,21 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
 <!-- ROOM ADD / EDIT MODAL -->
 
-<div class="modal fade" id="roomModal">
-
+<div class="modal fade" id="roomModal" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
+        <div class="modal-content p-0">
+            <!-- 🔥 he add kar -->
 
-        <div class="modal-content">
-
-
-
-            <div class="modal-body" id="roomModalBody"></div>
+            <div class="modal-body p-0" id="roomModalBody"></div>
 
         </div>
-
     </div>
-
 </div>
 
 
 <!-- ROOM VIEW MODAL -->
 
-<div class="modal fade" id="roomViewModal">
+<div class="modal fade" id="roomViewModal" data-bs-backdrop="static">
 
     <div class="modal-dialog modal-lg">
 
@@ -282,7 +276,7 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
             table = $('#dataTable').DataTable({
                 responsive: true,
-                pageLength: 25,
+                pageLength: 10,
                 dom: 'lfrtip',
                 ordering: false,
                 buttons: [
@@ -504,26 +498,7 @@ new { @class = "form-select", id = "FarmhouseFilter" }
 
                 order: [[5, 'asc']],
 
-                drawCallback: function (settings) {
-
-                    var api = this.api();
-                    var rows = api.rows({ page: 'current' }).nodes();
-                    var last = null;
-
-                    api.column(5, { page: 'current' }).data().each(function (group, i) {
-
-                        if (last !== group) {
-
-                            $(rows).eq(i).before(
-                                '<tr class="group"><td colspan="8">▶ ' + group + '</td></tr>'
-                            );
-
-                            last = group;
-                        }
-
-                    });
-
-                }
+               
 
             });
             table.on('draw.dt', function () {
@@ -673,7 +648,7 @@ new { @class = "form-select", id = "FarmhouseFilter" }
                 rows.show();
             }
 
-            table.draw(false);   // 🔥 pagination adjust hoil
+            table.draw(false);   
 
         });
         function showToast(message, type = "info") {

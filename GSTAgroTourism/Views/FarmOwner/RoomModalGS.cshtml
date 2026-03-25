@@ -11,14 +11,15 @@
         border: 2px solid green !important;
     }
 </style>
-<div class="modal-header">
+<div class="modal-header @(string.IsNullOrEmpty(Model.RoomCode) ? "bg-success text-white" : "bg-primary text-white")">
 
     <h4 class="modal-title">
         @(string.IsNullOrEmpty(Model.RoomCode) ? "Add Room" : "Edit Room")
     </h4>
 
-</div>
+    <button type="button" class="btn-close @(string.IsNullOrEmpty(Model.RoomCode) ? "" : "btn-close-white")" data-bs-dismiss="modal"></button>
 
+</div>
 <div class="modal-body">
 
     <form id="roomForm" enctype="multipart/form-data">
@@ -98,10 +99,9 @@
             <div class="col-md-9">
                 <input type="number"
                        id="Price"
-                       name="Price"
+                       name="PricePerNight"
                        value="@Model.PricePerNight"
-                       class="form-control"
-                       placeholder="Enter Price" />
+                       class="form-control" />
                 <small class="text-danger error-msg"></small>
             </div>
 
@@ -142,21 +142,26 @@
         </div>
 
 
-        <!-- Buttons -->
+        <div class="form-group row mb-3">
 
-        <div class="mt-3 text-end">
+            <div class="col-md-9 offset-md-3">
 
-            <button type="button"
-                    class="btn btn-outline-primary btn-rounded"
-                    onclick="saveRoomGS()">
+                <button type="button"
+                        class="btn btn-outline-primary btn-rounded"
+                        onclick="saveRoomGS()">
+                    <i class="fa fa-check"></i>
+                    @(string.IsNullOrEmpty(Model.RoomCode) ? "Save" : "Update")
+                </button>
 
-                <i class="fa fa-save"></i>
-                @(string.IsNullOrEmpty(Model.RoomCode) ? "Save" : "Update")
+                <button type="button"
+                        class="btn btn-outline-danger btn-rounded"
+                        data-bs-dismiss="modal">
+                    <i class="fa fa-times"></i> Cancel
+                </button>
 
-            </button>
+            </div>
 
         </div>
-
 
     </form>
 

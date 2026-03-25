@@ -157,26 +157,17 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
 
                 <button type="submit"
                         class="btn btn-outline-primary btn-rounded">
-
+                    <i class="fa fa-check"></i>
                     @(string.IsNullOrEmpty(Model?.FoodServiceCode) ? "Save" : "Update")
 
-                    <i class="fa fa-pencil"></i>
-
                 </button>
-
-
                 <button type="button"
-                        class="btn btn-outline-danger btn-rounded">
-
+                        class="btn btn-outline-danger btn-rounded"
+                        data-bs-dismiss="modal">
                     <i class="fa fa-times"></i> Cancel
-
                 </button>
-
             </div>
-
         </div>
-
-
     </div>
 
 }
@@ -201,7 +192,6 @@ new { enctype = "multipart/form-data", id = "foodForm" }))
             var form = $(this);
 
             if (!form.valid()) {
-                //Swal.fire("Validation Error", "Please fill all required fields", "warning");
                 return false;
             }
 
